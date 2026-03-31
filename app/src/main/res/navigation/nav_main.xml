@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_main"
+    app:startDestination="@id/roleSelectionFragment">
+
+    <fragment
+        android:id="@+id/roleSelectionFragment"
+        android:name="com.example.pillulkin.ui.common.RoleSelectionFragment"
+        android:label="Выбор роли"
+        tools:layout="@layout/fragment_role_selection">
+
+        <action
+            android:id="@+id/action_roleSelection_to_patient"
+            app:destination="@id/nav_patient" />
+
+        <action
+            android:id="@+id/action_roleSelection_to_doctor"
+            app:destination="@id/nav_doctor" />
+    </fragment>
+
+    <include app:graph="@navigation/nav_patient" />
+    <include app:graph="@navigation/nav_doctor" />
+</navigation>

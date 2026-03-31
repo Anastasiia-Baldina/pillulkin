@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_doctor"
+    app:startDestination="@id/doctorCodeEntryFragment">
+
+    <fragment
+        android:id="@+id/doctorCodeEntryFragment"
+        android:name="com.example.pillulkin.ui.doctor.DoctorCodeEntryFragment"
+        android:label="Вход по коду"
+        tools:layout="@layout/fragment_doctor_code_entry">
+
+        <action
+            android:id="@+id/action_codeEntry_to_medicineList"
+            app:destination="@id/doctorMedicineListFragment"
+            app:popUpTo="@id/doctorCodeEntryFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/doctorMedicineListFragment"
+        android:name="com.example.pillulkin.ui.doctor.DoctorMedicineListFragment"
+        android:label="Аптечка пациента"
+        tools:layout="@layout/fragment_doctor_medicine_list">
+
+        <action
+            android:id="@+id/action_doctorMedicineList_to_search"
+            app:destination="@id/doctorSearchFragment" />
+
+        <action
+            android:id="@+id/action_doctorMedicineList_to_symptoms"
+            app:destination="@id/doctorSymptomsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/doctorSearchFragment"
+        android:name="com.example.pillulkin.ui.doctor.DoctorSearchFragment"
+        android:label="Подбор лекарств"
+        tools:layout="@layout/fragment_doctor_search">
+
+        <action
+            android:id="@+id/action_search_to_results"
+            app:destination="@id/recommendationResultsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/recommendationResultsFragment"
+        android:name="com.example.pillulkin.ui.doctor.RecommendationResultsFragment"
+        android:label="Результаты"
+        tools:layout="@layout/fragment_recommendation_results">
+
+        <argument
+            android:name="query"
+            app:argType="string" />
+
+        <argument
+            android:name="queryType"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/doctorSymptomsFragment"
+        android:name="com.example.pillulkin.ui.doctor.DoctorSymptomsFragment"
+        android:label="Симптомы пациента"
+        tools:layout="@layout/fragment_doctor_symptoms">
+    </fragment>
+</navigation>

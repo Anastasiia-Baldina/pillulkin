@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_patient"
+    app:startDestination="@id/medicineListFragment">
+
+    <fragment
+        android:id="@+id/medicineListFragment"
+        android:name="com.example.pillulkin.ui.patient.MedicineListFragment"
+        android:label="Аптечка"
+        tools:layout="@layout/fragment_medicine_list">
+
+        <action
+            android:id="@+id/action_medicineList_to_addMedicine"
+            app:destination="@id/addMedicineFragment" />
+
+        <action
+            android:id="@+id/action_medicineList_to_medicineDetail"
+            app:destination="@id/medicineDetailFragment" />
+
+        <action
+            android:id="@+id/action_medicineList_to_profile"
+            app:destination="@id/patientProfileFragment" />
+
+        <action
+            android:id="@+id/action_medicineList_to_symptoms"
+            app:destination="@id/symptomsFragment" />
+
+        <action
+            android:id="@+id/action_medicineList_to_generateCode"
+            app:destination="@id/generateCodeFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addMedicineFragment"
+        android:name="com.example.pillulkin.ui.patient.AddMedicineFragment"
+        android:label="Добавить лекарство"
+        tools:layout="@layout/fragment_add_medicine" />
+
+    <fragment
+        android:id="@+id/editMedicineFragment"
+        android:name="com.example.pillulkin.ui.patient.EditMedicineFragment"
+        android:label="Редактировать лекарство"
+        tools:layout="@layout/fragment_add_medicine">
+
+        <argument
+            android:name="medicineId"
+            app:argType="long"
+            android:defaultValue="-1L" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/medicineDetailFragment"
+        android:name="com.example.pillulkin.ui.patient.MedicineDetailFragment"
+        android:label="Информация о лекарстве"
+        tools:layout="@layout/fragment_medicine_detail">
+
+        <argument
+            android:name="medicineId"
+            app:argType="long" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/patientProfileFragment"
+        android:name="com.example.pillulkin.ui.patient.PatientProfileFragment"
+        android:label="Профиль"
+        tools:layout="@layout/fragment_patient_profile" />
+
+    <fragment
+        android:id="@+id/symptomsFragment"
+        android:name="com.example.pillulkin.ui.patient.SymptomsFragment"
+        android:label="Мои симптомы"
+        tools:layout="@layout/fragment_symptoms" />
+
+    <fragment
+        android:id="@+id/generateCodeFragment"
+        android:name="com.example.pillulkin.ui.patient.GenerateCodeFragment"
+        android:label="Код доступа"
+        tools:layout="@layout/fragment_generate_code" />
+</navigation>

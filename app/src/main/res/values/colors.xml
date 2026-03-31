@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Lavender palette -->
+    <color name="primary">#B8A9C9</color>
+    <color name="primary_dark">#9B8BB8</color>
+    <color name="primary_light">#D4C9E2</color>
+    
+    <!-- Pastel Teal palette -->
+    <color name="secondary">#88C9BF</color>
+    <color name="secondary_dark">#6BB3A7</color>
+    <color name="secondary_light">#A8D9D2</color>
+    
+    <!-- Pastel Green palette -->
+    <color name="tertiary">#A8D5A2</color>
+    <color name="tertiary_dark">#8CC485</color>
+    <color name="tertiary_light">#C2E4BE</color>
+    
+    <!-- UI colors -->
+    <color name="background">#F8F6FA</color>
+    <color name="surface">#FFFFFFFF</color>
+    <color name="error">#E57373</color>
+    <color name="on_primary">#FFFFFFFF</color>
+    <color name="on_secondary">#FFFFFFFF</color>
+    <color name="on_background">#FF333333</color>
+    <color name="on_surface">#FF333333</color>
+    <color name="on_error">#FFFFFFFF</color>
+    
+    <!-- Status colors -->
+    <color name="expired">#E57373</color>
+    <color name="valid">#A8D5A2</color>
+    <color name="warning">#FFB74D</color>
+    
+    <!-- Card and input colors -->
+    <color name="card_background">#FFFFFFFF</color>
+    <color name="input_background">#F0EDF4</color>
+    <color name="divider">#E0D8E8</color>
+    <color name="hint">#9E9E9E</color>
+</resources>

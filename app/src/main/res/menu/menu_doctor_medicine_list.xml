@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    
+    <item
+        android:id="@+id/action_doctor_medicine"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="@string/doctor_menu_medicine"
+        app:showAsAction="ifRoom" />
+        
+    <item
+        android:id="@+id/action_doctor_symptoms"
+        android:icon="@drawable/ic_thermometer"
+        android:title="@string/doctor_menu_symptoms"
+        app:showAsAction="ifRoom" />
+</menu>

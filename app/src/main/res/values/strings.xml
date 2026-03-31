@@ -1,0 +1,120 @@
+<resources>
+    <string name="app_name">Пилюлькин</string>
+    
+    <!-- Role Selection -->
+    <string name="role_selection_title">Умная аптечка</string>
+    <string name="role_selection_subtitle">Выберите режим работы</string>
+    <string name="role_patient">Пациент</string>
+    <string name="role_doctor">Врач</string>
+    <string name="role_patient_description">Управление домашней аптечкой</string>
+    <string name="role_doctor_description">Доступ к аптечке пациента</string>
+    
+    <!-- Medicine List -->
+    <string name="medicine_list_title">Моя аптечка</string>
+    <string name="medicine_search_hint">Поиск лекарства...</string>
+    <string name="medicine_empty">Аптечка пуста</string>
+    <string name="medicine_empty_description">Добавьте первое лекарство</string>
+    <string name="add_medicine">Добавить</string>
+    <string name="sort_by_name">По названию</string>
+    <string name="sort_by_date">По сроку годности</string>
+    
+    <!-- Add/Edit Medicine -->
+    <string name="add_medicine_title">Новое лекарство</string>
+    <string name="edit_medicine_title">Редактирование</string>
+    <string name="medicine_name">Название</string>
+    <string name="medicine_name_hint">Введите название лекарства</string>
+    <string name="medicine_dosage">Дозировка</string>
+    <string name="medicine_dosage_hint">Например: 500 мг</string>
+    <string name="medicine_expiration">Срок годности</string>
+    <string name="medicine_quantity">Количество</string>
+    <string name="medicine_quantity_hint">Количество в упаковке</string>
+    <string name="medicine_form">Форма выпуска</string>
+    <string name="medicine_form_hint">Таблетки, капсулы, сироп...</string>
+    <string name="medicine_comment">Комментарий</string>
+    <string name="medicine_comment_hint">Дополнительная информация</string>
+    <string name="save">Сохранить</string>
+    <string name="cancel">Отмена</string>
+    <string name="delete">Удалить</string>
+    <string name="select_date">Выбрать дату</string>
+    
+    <!-- Medicine Detail -->
+    <string name="medicine_detail_title">Информация о лекарстве</string>
+    <string name="medicine_status_valid">Годно</string>
+    <string name="medicine_status_expired">Просрочено</string>
+    <string name="medicine_status_expiring_soon">Скоро истекает</string>
+    <string name="edit">Редактировать</string>
+    
+    <!-- Patient Profile -->
+    <string name="profile_title">Профиль пациента</string>
+    <string name="profile_name">Имя</string>
+    <string name="profile_name_hint">Введите ваше имя</string>
+    <string name="profile_age">Возраст</string>
+    <string name="profile_age_hint">Введите возраст</string>
+    <string name="profile_allergies">Аллергии</string>
+    <string name="profile_allergies_hint">Укажите аллергии на лекарства</string>
+    <string name="profile_contraindications">Противопоказания</string>
+    <string name="profile_contraindications_hint">Укажите противопоказания</string>
+    <string name="profile_notes">Заметки</string>
+    <string name="profile_notes_hint">Дополнительная информация</string>
+    
+    <!-- Generate Code -->
+    <string name="generate_code_title">Код доступа для врача</string>
+    <string name="generate_code_description">Создайте временный код для предоставления врачу доступа к вашей аптечке</string>
+    <string name="generate_code_button">Сгенерировать код</string>
+    <string name="code_validity">Код действителен 1 час</string>
+    <string name="copy_code">Скопировать код</string>
+    <string name="code_copied">Код скопирован</string>
+    
+    <!-- Doctor Code Entry -->
+    <string name="doctor_code_title">Вход по коду</string>
+    <string name="doctor_code_hint">Введите код пациента</string>
+    <string name="doctor_code_submit">Войти</string>
+    
+    <!-- Doctor Medicine List -->
+    <string name="doctor_medicine_list_title">Аптечка пациента</string>
+    
+    <!-- Doctor Search -->
+    <string name="doctor_search_title">Подбор лекарств</string>
+    <string name="doctor_search_description">Введите диагноз или название препарата</string>
+    <string name="doctor_search_hint">Введите запрос...</string>
+    <string name="search_type_diagnosis">По диагнозу</string>
+    <string name="search_type_medicine">По названию препарата</string>
+    <string name="search_button">Найти</string>
+    
+    <!-- Recommendation Results -->
+    <string name="recommendation_results_title">Результаты подбора</string>
+    <string name="recommendation_empty">Ничего не найдено</string>
+    <string name="recommendation_empty_description">В аптечке нет подходящих лекарств</string>
+    <string name="recommendation_reason">Причина: %s</string>
+    <string name="recommendation_warning">Внимание: %s</string>
+    <string name="recommendation_expired">Просрочено</string>
+    
+    <!-- Validation -->
+    <string name="validation_required">Обязательное поле</string>
+    <string name="validation_invalid_age">Некорректный возраст</string>
+    <string name="validation_invalid_quantity">Некорректное количество</string>
+    
+    <!-- Success -->
+    <string name="success_saved">Сохранено</string>
+    <string name="success_deleted">Удалено</string>
+    
+    <!-- Symptoms -->
+    <string name="symptoms_title">Мои симптомы</string>
+    <string name="symptoms_empty">Нет симптомов</string>
+    <string name="symptoms_empty_description">Добавьте симптомы для отслеживания</string>
+    <string name="symptom_hint">Опишите симптом</string>
+    <string name="symptom_add">Добавить симптом</string>
+    <string name="symptom_added">Симптом добавлен</string>
+    <string name="symptom_date_format">dd.MM.yyyy HH:mm</string>
+    <string name="doctor_symptoms_title">Симптомы пациента</string>
+    
+    <!-- Doctor menu -->
+    <string name="doctor_menu_medicine">Аптечка</string>
+    <string name="doctor_menu_symptoms">Симптомы</string>
+    
+    <!-- Errors -->
+    <string name="error_generic">Произошла ошибка</string>
+    <string name="error_save_failed">Не удалось сохранить</string>
+    <string name="error_delete_failed">Не удалось удалить</string>
+    <string name="error_load_failed">Не удалось загрузить данные</string>
+</resources>
