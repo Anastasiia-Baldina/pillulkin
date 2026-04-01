@@ -112,6 +112,10 @@
     <string name="doctor_menu_medicine">Аптечка</string>
     <string name="doctor_menu_symptoms">Симптомы</string>
     
+    <!-- Menu -->
+    <string name="menu_generate_code">Код для врача</string>
+    <string name="menu_logout">Выход</string>
+    
     <!-- Errors -->
     <string name="error_generic">Произошла ошибка</string>
     <string name="error_save_failed">Не удалось сохранить</string>

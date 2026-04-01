@@ -50,11 +50,18 @@ public class MedicineListFragment extends Fragment {
         });
 
         binding.toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_symptoms) {
+            int id = item.getItemId();
+            if (id == R.id.action_symptoms) {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_symptoms);
                 return true;
-            } else if (item.getItemId() == R.id.action_profile) {
+            } else if (id == R.id.action_profile) {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_profile);
+                return true;
+            } else if (id == R.id.action_generate_code) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                return true;
+            } else if (id == R.id.action_logout) {
+                Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
                 return true;
             }
             return false;

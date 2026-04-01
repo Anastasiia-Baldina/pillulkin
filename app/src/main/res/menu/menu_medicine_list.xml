@@ -13,4 +13,14 @@
         android:icon="@drawable/ic_person"
         android:title="@string/profile_title"
         app:showAsAction="ifRoom" />
+    
+    <item
+        android:id="@+id/action_generate_code"
+        android:title="@string/menu_generate_code"
+        app:showAsAction="never" />
+    
+    <item
+        android:id="@+id/action_logout"
+        android:title="@string/menu_logout"
+        app:showAsAction="never" />
 </menu>
