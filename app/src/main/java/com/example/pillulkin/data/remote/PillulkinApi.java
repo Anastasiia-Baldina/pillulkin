@@ -67,6 +67,11 @@ public interface PillulkinApi {
             @Path("patientId") long patientId,
             @Path("symptomId") long symptomId);
 
+    @PUT("api/v1/patients/{patientId}/symptoms/{symptomId}/renew")
+    Call<PatientSymptomResponse> renewSymptom(
+            @Path("patientId") long patientId,
+            @Path("symptomId") long symptomId);
+
     @GET("api/v1/patients/{patientId}/medicines")
     Call<List<PatientMedicineResponse>> getMedicines(@Path("patientId") long patientId);
 
@@ -79,6 +84,12 @@ public interface PillulkinApi {
     Call<Void> deleteMedicine(
             @Path("patientId") long patientId,
             @Path("medicineId") long medicineId);
+
+    @PUT("api/v1/patients/{patientId}/medicines/{patientMedicineId}")
+    Call<PatientMedicineResponse> updateMedicine(
+            @Path("patientId") long patientId,
+            @Path("patientMedicineId") long patientMedicineId,
+            @Body PatientMedicineRequest request);
 
     @GET("api/v1/medicines")
     Call<List<ReferenceMedicineResponse>> getReferenceMedicines(

@@ -188,6 +188,31 @@ public class MedicineRepository {
         }
     }
 
+    public void updatePatientMedicine(long patientMedicineId, String expirationDate, String quantity) {
+        if (!networkModule.isPatientLoggedIn()) {
+            error.postValue("Not authenticated");
+            return;
+        }
+        isLoading.postValue(true);
+        networkModule.updateMedicine(patientMedicineId, expirationDate, quantity).enqueue(new Callback<PatientMedicineResponse>() {
+            @Override
+            public void onResponse(Call<PatientMedicineResponse> call, Response<PatientMedicineResponse> response) {
+                isLoading.postValue(false);
+                if (response.isSuccessful()) {
+                    loadPatientMedicines();
+                } else {
+                    error.postValue("Failed to update medicine: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PatientMedicineResponse> call, Throwable t) {
+                isLoading.postValue(false);
+                error.postValue("Network error: " + t.getMessage());
+            }
+        });
+    }
+
     private void queueOperation(String type, String payload) {
         PillulkinDatabase.databaseWriteExecutor.execute(() -> {
             PendingOperation op = new PendingOperation();

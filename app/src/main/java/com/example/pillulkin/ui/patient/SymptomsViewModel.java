@@ -42,4 +42,8 @@ public class SymptomsViewModel extends AndroidViewModel {
     public void deleteSymptom(long symptomId) {
         repository.deleteSymptom(symptomId);
     }
+
+    public void renewSymptom(long symptomId) {
+        repository.renewSymptom(symptomId);
+    }
 }

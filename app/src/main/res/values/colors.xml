@@ -38,4 +38,11 @@
     <color name="input_background">#F0EDF4</color>
     <color name="divider">#E0D8E8</color>
     <color name="hint">#9E9E9E</color>
+
+    <color name="expiration_warning">#FF8A80</color>
+    <color name="warning_text">#B71C1C</color>
+    <color name="expired_text">#FFFFFF</color>
+    <color name="symptom_outdated">#E0E0E0</color>
+    <color name="symptom_outdated_text">#9E9E9E</color>
+    <color name="diagnosis_result_bg">#E8F5E9</color>
 </resources>

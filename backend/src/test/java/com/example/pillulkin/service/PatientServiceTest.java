@@ -251,6 +251,50 @@ class PatientServiceTest {
         assertNull(result.getName());
     }
 
+    @Test
+    void shouldRenewSymptom() {
+        PatientSymptom symptom = PatientSymptom.builder()
+                .id(5L)
+                .patient(testPatient)
+                .symptom("headache")
+                .timestamp(LocalDateTime.now().minusDays(10))
+                .build();
+
+        when(patientSymptomRepository.findById(5L)).thenReturn(Optional.of(symptom));
+        when(patientSymptomRepository.save(any(PatientSymptom.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        PatientSymptomResponse result = patientService.renewSymptom(1L, 5L);
+
+        assertNotNull(result);
+        assertEquals("headache", result.getSymptom());
+        verify(patientSymptomRepository).save(symptom);
+    }
+
+    @Test
+    void shouldThrowWhenRenewingSymptomOfOtherPatient() {
+        Patient otherPatient = Patient.builder().id(2L).build();
+        PatientSymptom symptom = PatientSymptom.builder()
+                .id(5L)
+                .patient(otherPatient)
+                .symptom("headache")
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        when(patientSymptomRepository.findById(5L)).thenReturn(Optional.of(symptom));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> patientService.renewSymptom(1L, 5L));
+    }
+
+    @Test
+    void shouldThrowWhenRenewingNonexistentSymptom() {
+        when(patientSymptomRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> patientService.renewSymptom(1L, 999L));
+    }
+
     private PatientMedicineRequest createMedicineRequest(long medicineId) {
         PatientMedicineRequest req = new PatientMedicineRequest();
         req.setMedicineId(medicineId);

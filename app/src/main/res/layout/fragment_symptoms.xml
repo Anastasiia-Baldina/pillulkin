@@ -25,8 +25,8 @@
         android:layout_height="0dp"
         android:layout_margin="16dp"
         android:clipToPadding="false"
-        android:paddingBottom="80dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:paddingBottom="200dp"
+        app:layout_constraintBottom_toTopOf="@id/btnDiagnose"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
@@ -38,7 +38,7 @@
         android:orientation="vertical"
         android:gravity="center"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnDiagnose"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar">
@@ -58,6 +58,38 @@
             android:textSize="14sp"
             android:textColor="@color/hint" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvDiagnosisResult"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="8dp"
+        android:padding="12dp"
+        android:background="@drawable/bg_diagnosis_result"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/on_background"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/btnDiagnose"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="Предполагаемый диагноз: Простуда" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDiagnose"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/diagnose_button"
+        app:strokeColor="@color/primary"
+        app:strokeWidth="1dp"
+        app:cornerRadius="12dp"
+        app:layout_constraintBottom_toTopOf="@id/inputLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <LinearLayout
         android:id="@+id/inputLayout"

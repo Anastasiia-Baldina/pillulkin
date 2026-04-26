@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,14 +15,23 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.pillulkin.R;
 import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
-import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 import com.example.pillulkin.databinding.FragmentMedicineListBinding;
 import com.example.pillulkin.ui.adapter.MedicineAdapter;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 public class MedicineListFragment extends Fragment {
     private FragmentMedicineListBinding binding;
     private MedicineListViewModel viewModel;
     private MedicineAdapter adapter;
+    private boolean sortByExpiration = false;
+    private List<PatientMedicineResponse> allMedicines = new ArrayList<>();
 
     @Nullable
     @Override
@@ -39,6 +49,7 @@ public class MedicineListFragment extends Fragment {
         setupToolbar();
         setupRecyclerView();
         setupSearch();
+        setupSort();
         setupFab();
         observeData();
 
@@ -99,15 +110,43 @@ public class MedicineListFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() >= 2) {
-                    viewModel.searchMedicines(s.toString());
-                } else if (s.length() == 0) {
-                    viewModel.loadMedicines();
-                }
+                filterMedicines(s.toString().trim());
             }
 
             @Override
             public void afterTextChanged(android.text.Editable s) {}
+        });
+    }
+
+    private void filterMedicines(String query) {
+        if (query.isEmpty()) {
+            applySortAndSubmit(allMedicines);
+            updateEmptyState(allMedicines.isEmpty());
+            return;
+        }
+        String lower = query.toLowerCase();
+        List<PatientMedicineResponse> filtered = new ArrayList<>();
+        for (PatientMedicineResponse m : allMedicines) {
+            if (m.getMedicineName() != null && m.getMedicineName().toLowerCase().contains(lower)) {
+                filtered.add(m);
+            }
+        }
+        applySortAndSubmit(filtered);
+        updateEmptyState(filtered.isEmpty());
+    }
+
+    private void setupSort() {
+        binding.btnSort.setOnClickListener(v -> {
+            sortByExpiration = !sortByExpiration;
+            if (sortByExpiration) {
+                Toast.makeText(requireContext(), R.string.sort_by_date, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(requireContext(), R.string.sort_by_name, Toast.LENGTH_SHORT).show();
+            }
+            List<PatientMedicineResponse> current = viewModel.getMedicines().getValue();
+            if (current != null) {
+                applySortAndSubmit(current);
+            }
         });
     }
 
@@ -120,34 +159,49 @@ public class MedicineListFragment extends Fragment {
     private void observeData() {
         viewModel.getMedicines().observe(getViewLifecycleOwner(), medicines -> {
             if (medicines != null) {
-                adapter.submitList(medicines);
-                updateEmptyState(medicines.isEmpty());
-            }
-        });
-
-        viewModel.getSearchResults().observe(getViewLifecycleOwner(), results -> {
-            if (results != null && !results.isEmpty()) {
-                java.util.List<PatientMedicineResponse> current = viewModel.getMedicines().getValue();
-                if (current == null || current.isEmpty() || binding.etSearch.getText().length() >= 2) {
-                    adapter.submitList(convertToPatientMedicines(results));
-                    updateEmptyState(false);
+                allMedicines = new ArrayList<>(medicines);
+                String query = binding.etSearch.getText().toString().trim();
+                if (query.isEmpty()) {
+                    applySortAndSubmit(medicines);
+                    updateEmptyState(medicines.isEmpty());
+                } else {
+                    filterMedicines(query);
                 }
             }
         });
     }
 
-    private java.util.List<PatientMedicineResponse> convertToPatientMedicines(java.util.List<ReferenceMedicineResponse> refs) {
-        java.util.List<PatientMedicineResponse> list = new java.util.ArrayList<>();
-        for (ReferenceMedicineResponse ref : refs) {
-            PatientMedicineResponse pmr = new PatientMedicineResponse();
-            pmr.setId(ref.getId());
-            pmr.setMedicineId(ref.getId());
-            pmr.setMedicineName(ref.getName());
-            pmr.setDosage(ref.getDosage());
-            pmr.setForm(ref.getForm());
-            list.add(pmr);
+    private void applySortAndSubmit(List<PatientMedicineResponse> medicines) {
+        List<PatientMedicineResponse> sorted = new ArrayList<>(medicines);
+        if (sortByExpiration) {
+            Collections.sort(sorted, (a, b) -> {
+                LocalDate da = parseDate(a.getExpirationDate());
+                LocalDate db = parseDate(b.getExpirationDate());
+                if (da == null && db == null) return a.getMedicineName().compareToIgnoreCase(b.getMedicineName());
+                if (da == null) return 1;
+                if (db == null) return -1;
+                return da.compareTo(db);
+            });
+        } else {
+            Collections.sort(sorted, Comparator.comparing(m -> m.getMedicineName().toLowerCase()));
         }
-        return list;
+        adapter.submitList(sorted);
+    }
+
+    private LocalDate parseDate(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) return null;
+        String[] formats = {"yyyy-MM-dd", "dd.MM.yyyy", "yyyy-MM-dd'T'HH:mm:ss"};
+        for (String fmt : formats) {
+            try {
+                return LocalDate.parse(dateStr.trim(), DateTimeFormatter.ofPattern(fmt));
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+        try {
+            return LocalDate.parse(dateStr.trim());
+        } catch (DateTimeParseException e) {
+            return null;
+        }
     }
 
     private void updateEmptyState(boolean isEmpty) {

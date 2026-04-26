@@ -7,7 +7,6 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
 import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
-import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 import com.example.pillulkin.data.repository.MedicineRepository;
 
 import java.util.List;
@@ -24,10 +23,6 @@ public class MedicineListViewModel extends AndroidViewModel {
         return repository.getPatientMedicines();
     }
 
-    public LiveData<List<ReferenceMedicineResponse>> getSearchResults() {
-        return repository.getSearchResults();
-    }
-
     public LiveData<Boolean> isLoading() {
         return repository.isLoading();
     }
@@ -42,9 +37,5 @@ public class MedicineListViewModel extends AndroidViewModel {
 
     public void deleteMedicine(long medicineId) {
         repository.deletePatientMedicine(medicineId);
-    }
-
-    public void searchMedicines(String query) {
-        repository.searchMedicines(query);
     }
 }

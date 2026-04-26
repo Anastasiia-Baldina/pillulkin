@@ -78,6 +78,18 @@ public class PatientService {
         patientSymptomRepository.delete(symptom);
     }
 
+    @Transactional
+    public PatientSymptomResponse renewSymptom(Long patientId, Long symptomId) {
+        PatientSymptom symptom = patientSymptomRepository.findById(symptomId)
+                .orElseThrow(() -> new IllegalArgumentException("Symptom not found"));
+        if (!symptom.getPatient().getId().equals(patientId)) {
+            throw new IllegalArgumentException("Symptom does not belong to patient");
+        }
+        symptom.setTimestamp(LocalDateTime.now());
+        symptom = patientSymptomRepository.save(symptom);
+        return mapToSymptomResponse(symptom);
+    }
+
     @Transactional(readOnly = true)
     public List<PatientMedicineResponse> getMedicines(Long patientId) {
         return patientMedicineRepository.findByPatientId(patientId)
@@ -111,6 +123,23 @@ public class PatientService {
                 .findByPatientIdAndReferenceMedicineId(patientId, medicineId)
                 .orElseThrow(() -> new IllegalArgumentException("Medicine not found in kit"));
         patientMedicineRepository.delete(medicine);
+    }
+
+    @Transactional
+    public PatientMedicineResponse updateMedicine(Long patientId, Long patientMedicineId, PatientMedicineRequest request) {
+        PatientMedicine medicine = patientMedicineRepository.findById(patientMedicineId)
+                .orElseThrow(() -> new IllegalArgumentException("Medicine not found"));
+        if (!medicine.getPatient().getId().equals(patientId)) {
+            throw new IllegalArgumentException("Medicine does not belong to patient");
+        }
+        if (request.getExpirationDate() != null) {
+            medicine.setExpirationDate(request.getExpirationDate());
+        }
+        if (request.getQuantity() != null) {
+            medicine.setQuantity(request.getQuantity());
+        }
+        medicine = patientMedicineRepository.save(medicine);
+        return mapToMedicineResponse(medicine);
     }
 
     private PatientProfileResponse mapToProfileResponse(PatientProfile profile) {

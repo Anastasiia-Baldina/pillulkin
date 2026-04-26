@@ -178,6 +178,10 @@ public class NetworkModule {
         return api.deleteSymptom(getPatientId(), symptomId);
     }
 
+    public Call<PatientSymptomResponse> renewSymptom(long symptomId) {
+        return api.renewSymptom(getPatientId(), symptomId);
+    }
+
     public Call<List<PatientMedicineResponse>> getMedicines() {
         return api.getMedicines(getPatientId());
     }
@@ -188,6 +192,11 @@ public class NetworkModule {
 
     public Call<Void> deleteMedicine(long medicineId) {
         return api.deleteMedicine(getPatientId(), medicineId);
+    }
+
+    public Call<PatientMedicineResponse> updateMedicine(long patientMedicineId, String expirationDate, String quantity) {
+        return api.updateMedicine(getPatientId(), patientMedicineId,
+                new PatientMedicineRequest(null, expirationDate, quantity));
     }
 
     public Call<List<ReferenceMedicineResponse>> searchMedicines(String query) {

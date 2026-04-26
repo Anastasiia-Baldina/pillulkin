@@ -1,9 +1,12 @@
 package com.example.pillulkin.ui.patient;
 
+import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,6 +17,10 @@ import androidx.navigation.Navigation;
 
 import com.example.pillulkin.R;
 import com.example.pillulkin.databinding.FragmentMedicineDetailBinding;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 public class MedicineDetailFragment extends Fragment {
     private FragmentMedicineDetailBinding binding;
@@ -80,7 +87,7 @@ public class MedicineDetailFragment extends Fragment {
         }
 
         if (quantity != null && !quantity.isEmpty()) {
-            binding.tvQuantity.setText("Количество: " + quantity);
+            binding.tvQuantity.setText(getString(R.string.medicine_quantity) + ": " + quantity);
             binding.tvQuantity.setVisibility(View.VISIBLE);
         } else {
             binding.tvQuantity.setVisibility(View.GONE);
@@ -91,17 +98,75 @@ public class MedicineDetailFragment extends Fragment {
     }
 
     private void setupButtons() {
-        binding.btnEdit.setVisibility(View.GONE);
+        binding.btnEdit.setVisibility(View.VISIBLE);
+        binding.btnEdit.setOnClickListener(v -> showEditDialog());
 
         if (getArguments() != null) {
-            long medicineId = getArguments().getLong("medicineId", -1);
+            long recordId = getArguments().getLong("recordId", -1);
             binding.btnDelete.setOnClickListener(v -> {
                 AddEditMedicineViewModel viewModel = new ViewModelProvider(this).get(AddEditMedicineViewModel.class);
-                viewModel.deleteMedicine(medicineId);
+                viewModel.deleteMedicine(recordId);
                 Toast.makeText(requireContext(), R.string.success_deleted, Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(v).popBackStack();
             });
         }
+    }
+
+    private void showEditDialog() {
+        if (getArguments() == null) return;
+
+        String currentExpiration = getArguments().getString("expirationDate", "");
+        String currentQuantity = getArguments().getString("quantity", "");
+
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_medicine, null);
+        EditText etDate = dialogView.findViewById(R.id.etExpirationDate);
+        EditText etQty = dialogView.findViewById(R.id.etQuantity);
+
+        if (currentExpiration != null && !currentExpiration.isEmpty()) {
+            etDate.setText(currentExpiration);
+        }
+        if (currentQuantity != null && !currentQuantity.isEmpty()) {
+            etQty.setText(currentQuantity);
+        }
+
+        etDate.setFocusable(false);
+        etDate.setOnClickListener(v -> {
+            LocalDate initial = LocalDate.now();
+            if (currentExpiration != null && !currentExpiration.isEmpty()) {
+                try {
+                    initial = LocalDate.parse(currentExpiration, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                } catch (Exception e) {
+                    try {
+                        initial = LocalDate.parse(currentExpiration);
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+            DatePickerDialog dpd = new DatePickerDialog(requireContext(),
+                    (view, year, month, dayOfMonth) -> {
+                        String selected = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+                        etDate.setText(selected);
+                    },
+                    initial.getYear(), initial.getMonthValue() - 1, initial.getDayOfMonth());
+            dpd.show();
+        });
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.edit_medicine_title)
+                .setView(dialogView)
+                .setPositiveButton(R.string.save, (dialog, which) -> {
+                    String newDate = etDate.getText() != null ? etDate.getText().toString().trim() : "";
+                    String newQty = etQty.getText() != null ? etQty.getText().toString().trim() : "";
+
+                    long recordId = getArguments().getLong("recordId", -1);
+                    AddEditMedicineViewModel viewModel = new ViewModelProvider(this).get(AddEditMedicineViewModel.class);
+                    viewModel.updateMedicine(recordId, newDate, newQty);
+
+                    Toast.makeText(requireContext(), R.string.success_saved, Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).popBackStack();
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
     }
 
     @Override

@@ -48,6 +48,13 @@ public class PatientController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{patientId}/symptoms/{symptomId}/renew")
+    public ResponseEntity<PatientSymptomResponse> renewSymptom(
+            @PathVariable Long patientId,
+            @PathVariable Long symptomId) {
+        return ResponseEntity.ok(patientService.renewSymptom(patientId, symptomId));
+    }
+
     @GetMapping("/{patientId}/medicines")
     public ResponseEntity<List<PatientMedicineResponse>> getMedicines(@PathVariable Long patientId) {
         return ResponseEntity.ok(patientService.getMedicines(patientId));
@@ -66,5 +73,13 @@ public class PatientController {
             @PathVariable Long medicineId) {
         patientService.removeMedicine(patientId, medicineId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{patientId}/medicines/{patientMedicineId}")
+    public ResponseEntity<PatientMedicineResponse> updateMedicine(
+            @PathVariable Long patientId,
+            @PathVariable Long patientMedicineId,
+            @RequestBody PatientMedicineRequest request) {
+        return ResponseEntity.ok(patientService.updateMedicine(patientId, patientMedicineId, request));
     }
 }

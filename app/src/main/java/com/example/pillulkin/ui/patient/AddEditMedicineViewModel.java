@@ -43,6 +43,11 @@ public class AddEditMedicineViewModel extends AndroidViewModel {
         saveSuccess.postValue(true);
     }
 
+    public void updateMedicine(long patientMedicineId, String expirationDate, String quantity) {
+        repository.updatePatientMedicine(patientMedicineId, expirationDate, quantity);
+        saveSuccess.postValue(true);
+    }
+
     public void deleteMedicine(long medicineId) {
         repository.deletePatientMedicine(medicineId);
     }

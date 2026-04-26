@@ -18,6 +18,8 @@ import com.example.pillulkin.data.remote.model.PatientSymptomResponse;
 import com.example.pillulkin.databinding.FragmentSymptomsBinding;
 import com.example.pillulkin.ui.adapter.SymptomsAdapter;
 
+import java.util.List;
+
 public class SymptomsFragment extends Fragment {
     private FragmentSymptomsBinding binding;
     private SymptomsViewModel viewModel;
@@ -39,6 +41,7 @@ public class SymptomsFragment extends Fragment {
         setupToolbar();
         setupRecyclerView();
         setupAddButton();
+        setupDiagnoseButton();
         observeData();
     }
 
@@ -66,10 +69,16 @@ public class SymptomsFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        adapter = new SymptomsAdapter(symptom -> {
-            viewModel.deleteSymptom(symptom.getId());
-            Toast.makeText(requireContext(), R.string.success_deleted, Toast.LENGTH_SHORT).show();
-        });
+        adapter = new SymptomsAdapter(
+                symptom -> {
+                    viewModel.deleteSymptom(symptom.getId());
+                    Toast.makeText(requireContext(), R.string.success_deleted, Toast.LENGTH_SHORT).show();
+                },
+                symptom -> {
+                    viewModel.renewSymptom(symptom.getId());
+                    Toast.makeText(requireContext(), R.string.symptom_renew, Toast.LENGTH_SHORT).show();
+                }
+        );
 
         binding.rvSymptoms.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvSymptoms.setAdapter(adapter);
@@ -92,6 +101,39 @@ public class SymptomsFragment extends Fragment {
         });
     }
 
+    private void setupDiagnoseButton() {
+        binding.btnDiagnose.setOnClickListener(v -> {
+            List<PatientSymptomResponse> symptoms = viewModel.getSymptoms().getValue();
+            if (symptoms == null || symptoms.isEmpty()) {
+                Toast.makeText(requireContext(), R.string.diagnose_error_no_symptoms, Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            boolean hasActual = false;
+            for (PatientSymptomResponse s : symptoms) {
+                if (!SymptomsAdapter.isSymptomOutdated(s.getTimestamp())) {
+                    hasActual = true;
+                    break;
+                }
+            }
+            if (!hasActual) {
+                Toast.makeText(requireContext(), R.string.diagnose_error_all_outdated, Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            DiagnosisDialogFragment dialog = DiagnosisDialogFragment.newInstance(
+                    DiagnosisDialogFragment.STUB_SYMPTOMS,
+                    binaryList -> {
+                        binding.tvDiagnosisResult.setText(
+                                getString(R.string.diagnose_result_label) + " " +
+                                        getString(R.string.diagnose_result_placeholder));
+                        binding.tvDiagnosisResult.setVisibility(View.VISIBLE);
+                    }
+            );
+            dialog.show(getChildFragmentManager(), "diagnosis_dialog");
+        });
+    }
+
     private void observeData() {
         viewModel.getSymptoms().observe(getViewLifecycleOwner(), symptoms -> {
             adapter.submitList(symptoms);
@@ -102,6 +144,12 @@ public class SymptomsFragment extends Fragment {
     private void updateEmptyState(boolean isEmpty) {
         binding.emptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         binding.rvSymptoms.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        viewModel.loadSymptoms();
     }
 
     @Override

@@ -121,4 +121,15 @@
     <string name="error_save_failed">Не удалось сохранить</string>
     <string name="error_delete_failed">Не удалось удалить</string>
     <string name="error_load_failed">Не удалось загрузить данные</string>
+
+    <string name="symptom_renew">Симптом актуален</string>
+    <string name="symptom_outdated_label">Неактуален</string>
+    <string name="diagnose_button">Предположить диагноз</string>
+    <string name="diagnose_error_no_symptoms">Для предположения диагноза необходимо ввести хотя бы 1 симптом</string>
+    <string name="diagnose_error_all_outdated">Требуется хотя бы 1 актуальный симптом</string>
+    <string name="diagnose_confirm">Подтвердить</string>
+    <string name="diagnose_title">Уточните симптомы</string>
+    <string name="diagnose_result_label">Предполагаемый диагноз:</string>
+    <string name="diagnose_result_placeholder">Простуда</string>
+    <string name="medicine_expired_label">Просрочено</string>
 </resources>

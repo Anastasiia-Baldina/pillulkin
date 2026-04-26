@@ -183,6 +183,32 @@ public class SymptomsRepository {
         }
     }
 
+    public void renewSymptom(long symptomId) {
+        if (!networkModule.isPatientLoggedIn()) {
+            error.postValue("Not authenticated");
+            return;
+        }
+
+        isLoading.postValue(true);
+        networkModule.renewSymptom(symptomId).enqueue(new Callback<PatientSymptomResponse>() {
+            @Override
+            public void onResponse(Call<PatientSymptomResponse> call, Response<PatientSymptomResponse> response) {
+                isLoading.postValue(false);
+                if (response.isSuccessful()) {
+                    loadSymptoms();
+                } else {
+                    error.postValue("Failed to renew symptom: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PatientSymptomResponse> call, Throwable t) {
+                isLoading.postValue(false);
+                error.postValue("Network error: " + t.getMessage());
+            }
+        });
+    }
+
     private void queueOperation(String type, String payload) {
         PillulkinDatabase.databaseWriteExecutor.execute(() -> {
             PendingOperation op = new PendingOperation();
