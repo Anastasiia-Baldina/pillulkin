@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,9 +13,10 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.pillulkin.R;
+import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
+import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 import com.example.pillulkin.databinding.FragmentMedicineListBinding;
 import com.example.pillulkin.ui.adapter.MedicineAdapter;
-import com.example.pillulkin.utils.DateUtils;
 
 public class MedicineListFragment extends Fragment {
     private FragmentMedicineListBinding binding;
@@ -39,9 +39,16 @@ public class MedicineListFragment extends Fragment {
         setupToolbar();
         setupRecyclerView();
         setupSearch();
-        setupSortButton();
         setupFab();
         observeData();
+
+        viewModel.loadMedicines();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        viewModel.loadMedicines();
     }
 
     private void setupToolbar() {
@@ -71,9 +78,15 @@ public class MedicineListFragment extends Fragment {
     private void setupRecyclerView() {
         adapter = new MedicineAdapter(medicine -> {
             Bundle args = new Bundle();
-            args.putLong("medicineId", medicine.getId());
+            args.putLong("recordId", medicine.getId());
+            args.putLong("medicineId", medicine.getMedicineId());
+            args.putString("medicineName", medicine.getMedicineName());
+            args.putString("dosage", medicine.getDosage());
+            args.putString("form", medicine.getForm());
+            args.putString("expirationDate", medicine.getExpirationDate());
+            args.putString("quantity", medicine.getQuantity());
             Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_medicineDetail, args);
-        }, medicine -> DateUtils.getExpirationStatus(medicine.getExpirationDate()));
+        });
 
         binding.rvMedicines.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvMedicines.setAdapter(adapter);
@@ -86,36 +99,15 @@ public class MedicineListFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > 0) {
-                    viewModel.searchMedicines(s.toString()).observe(getViewLifecycleOwner(), medicines -> {
-                        adapter.submitList(medicines);
-                        updateEmptyState(medicines.isEmpty());
-                    });
-                } else {
-                    observeData();
+                if (s.length() >= 2) {
+                    viewModel.searchMedicines(s.toString());
+                } else if (s.length() == 0) {
+                    viewModel.loadMedicines();
                 }
             }
 
             @Override
             public void afterTextChanged(android.text.Editable s) {}
-        });
-    }
-
-    private void setupSortButton() {
-        binding.btnSort.setOnClickListener(v -> {
-            PopupMenu popup = new PopupMenu(requireContext(), v);
-            popup.getMenu().add(0, 1, 0, R.string.sort_by_name);
-            popup.getMenu().add(0, 2, 1, R.string.sort_by_date);
-            popup.setOnMenuItemClickListener(item -> {
-                if (item.getItemId() == 1) {
-                    viewModel.setSortOrder("name");
-                } else {
-                    viewModel.setSortOrder("expiration");
-                }
-                observeData();
-                return true;
-            });
-            popup.show();
         });
     }
 
@@ -127,9 +119,35 @@ public class MedicineListFragment extends Fragment {
 
     private void observeData() {
         viewModel.getMedicines().observe(getViewLifecycleOwner(), medicines -> {
-            adapter.submitList(medicines);
-            updateEmptyState(medicines.isEmpty());
+            if (medicines != null) {
+                adapter.submitList(medicines);
+                updateEmptyState(medicines.isEmpty());
+            }
         });
+
+        viewModel.getSearchResults().observe(getViewLifecycleOwner(), results -> {
+            if (results != null && !results.isEmpty()) {
+                java.util.List<PatientMedicineResponse> current = viewModel.getMedicines().getValue();
+                if (current == null || current.isEmpty() || binding.etSearch.getText().length() >= 2) {
+                    adapter.submitList(convertToPatientMedicines(results));
+                    updateEmptyState(false);
+                }
+            }
+        });
+    }
+
+    private java.util.List<PatientMedicineResponse> convertToPatientMedicines(java.util.List<ReferenceMedicineResponse> refs) {
+        java.util.List<PatientMedicineResponse> list = new java.util.ArrayList<>();
+        for (ReferenceMedicineResponse ref : refs) {
+            PatientMedicineResponse pmr = new PatientMedicineResponse();
+            pmr.setId(ref.getId());
+            pmr.setMedicineId(ref.getId());
+            pmr.setMedicineName(ref.getName());
+            pmr.setDosage(ref.getDosage());
+            pmr.setForm(ref.getForm());
+            list.add(pmr);
+        }
+        return list;
     }
 
     private void updateEmptyState(boolean isEmpty) {

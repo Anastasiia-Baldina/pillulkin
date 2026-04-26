@@ -44,11 +44,26 @@ public class GenerateCodeFragment extends Fragment {
         binding.toolbar.setNavigationOnClickListener(v -> {
             Navigation.findNavController(v).popBackStack();
         });
+
+        binding.toolbar.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.action_symptoms) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_symptoms);
+                return true;
+            } else if (id == R.id.action_profile) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_profile);
+                return true;
+            } else if (id == R.id.action_logout) {
+                Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                return true;
+            }
+            return false;
+        });
     }
 
     private void setupButtons() {
         binding.btnGenerate.setOnClickListener(v -> {
-            viewModel.generateCode();
+            viewModel.generateCode(60);
         });
 
         binding.btnCopy.setOnClickListener(v -> {

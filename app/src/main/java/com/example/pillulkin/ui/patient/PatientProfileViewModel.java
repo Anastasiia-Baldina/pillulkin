@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.example.pillulkin.data.local.entity.PatientProfileEntity;
+import com.example.pillulkin.data.remote.model.PatientProfileResponse;
 import com.example.pillulkin.data.repository.PatientProfileRepository;
 
 public class PatientProfileViewModel extends AndroidViewModel {
@@ -17,17 +17,27 @@ public class PatientProfileViewModel extends AndroidViewModel {
         repository = new PatientProfileRepository(application);
     }
 
-    public LiveData<PatientProfileEntity> getProfile() {
+    public LiveData<PatientProfileResponse> getProfile() {
         return repository.getProfile();
     }
 
-    public void saveProfile(PatientProfileEntity profile) {
-        PatientProfileEntity existing = repository.getProfileSync();
-        if (existing != null) {
-            profile.setId(existing.getId());
-            repository.update(profile);
-        } else {
-            repository.insert(profile);
-        }
+    public LiveData<Boolean> isLoading() {
+        return repository.isLoading();
+    }
+
+    public LiveData<String> getError() {
+        return repository.getError();
+    }
+
+    public void loadProfile() {
+        repository.loadProfile();
+    }
+
+    public void saveProfile(String name, Integer age, String allergies, String contraindications, String notes) {
+        repository.saveProfile(name, age, allergies, contraindications, notes);
+    }
+
+    public void logout() {
+        repository.logout();
     }
 }

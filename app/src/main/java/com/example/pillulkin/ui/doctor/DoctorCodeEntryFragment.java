@@ -30,10 +30,12 @@ public class DoctorCodeEntryFragment extends Fragment {
         return binding.getRoot();
     }
 
+    private boolean codeSubmitted = false;
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(DoctorCodeEntryViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(DoctorCodeEntryViewModel.class);
 
         setupToolbar();
         setupSubmitButton();
@@ -42,50 +44,43 @@ public class DoctorCodeEntryFragment extends Fragment {
 
     private void setupToolbar() {
         binding.toolbar.setNavigationOnClickListener(v -> {
-            if (getActivity() != null) {
-                getActivity().onBackPressed();
-            }
+            if (getActivity() != null) getActivity().onBackPressed();
         });
     }
 
     private void setupSubmitButton() {
         binding.btnSubmit.setOnClickListener(v -> {
-            if (isNavigating) {
-                return;
-            }
-            if (binding == null || binding.etCode == null) {
-                return;
-            }
+            if (isNavigating || binding == null || binding.etCode == null) return;
+
             String code = binding.etCode.getText() != null ? binding.etCode.getText().toString().trim() : "";
             if (code.isEmpty()) {
                 binding.codeLayout.setError(getString(R.string.validation_required));
                 return;
             }
             binding.codeLayout.setError(null);
-            viewModel.validateCode(code);
+            codeSubmitted = true;
+            viewModel.loginWithCode(code);
         });
     }
 
     private void observeData() {
-        viewModel.getValidationResult().observe(getViewLifecycleOwner(), result -> {
-            if (binding == null || result == null) {
-                return;
+        viewModel.getError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null && binding != null) {
+                binding.codeLayout.setError(error);
             }
-            if (result.isValid()) {
-                binding.codeLayout.setError(null);
+        });
+
+        viewModel.getLoginSuccess().observe(getViewLifecycleOwner(), success -> {
+            if (success != null && success) {
                 navigateToMedicineList();
-            } else {
-                binding.codeLayout.setError(result.getMessage());
             }
         });
     }
 
     private void navigateToMedicineList() {
-        if (isNavigating) {
-            return;
-        }
+        if (isNavigating) return;
         isNavigating = true;
-        
+
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             try {
                 if (getView() != null && isAdded()) {

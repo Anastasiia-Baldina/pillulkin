@@ -23,6 +23,8 @@
     <string name="edit_medicine_title">Редактирование</string>
     <string name="medicine_name">Название</string>
     <string name="medicine_name_hint">Введите название лекарства</string>
+    <string name="search_medicine_hint">Поиск по справочнику лекарств...</string>
+    <string name="search">Найти</string>
     <string name="medicine_dosage">Дозировка</string>
     <string name="medicine_dosage_hint">Например: 500 мг</string>
     <string name="medicine_expiration">Срок годности</string>

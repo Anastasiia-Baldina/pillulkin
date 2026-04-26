@@ -3,7 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_patient"
-    app:startDestination="@id/medicineListFragment">
+    app:startDestination="@id/patientAuthFragment">
+
+    <fragment
+        android:id="@+id/patientAuthFragment"
+        android:name="com.example.pillulkin.ui.patient.PatientAuthFragment"
+        android:label="Вход"
+        tools:layout="@layout/fragment_patient_auth">
+
+        <action
+            android:id="@+id/action_patientAuth_to_patient"
+            app:destination="@id/medicineListFragment"
+            app:popUpTo="@id/patientAuthFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/medicineListFragment"
@@ -37,18 +50,6 @@
         android:name="com.example.pillulkin.ui.patient.AddMedicineFragment"
         android:label="Добавить лекарство"
         tools:layout="@layout/fragment_add_medicine" />
-
-    <fragment
-        android:id="@+id/editMedicineFragment"
-        android:name="com.example.pillulkin.ui.patient.EditMedicineFragment"
-        android:label="Редактировать лекарство"
-        tools:layout="@layout/fragment_add_medicine">
-
-        <argument
-            android:name="medicineId"
-            app:argType="long"
-            android:defaultValue="-1L" />
-    </fragment>
 
     <fragment
         android:id="@+id/medicineDetailFragment"

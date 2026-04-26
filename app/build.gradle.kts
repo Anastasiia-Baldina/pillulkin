@@ -64,6 +64,16 @@ dependencies {
     implementation(libs.cardview)
     implementation(libs.fragment)
     
+    // Network
+    implementation(libs.retrofit)
+    implementation(libs.okhttp)
+    implementation(libs.logging)
+    implementation(libs.gson)
+    implementation(libs.converter)
+    
+    // Google Sign-In
+    implementation(libs.play.services.auth)
+    
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
@@ -75,7 +85,6 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.espresso.contrib)
     androidTestImplementation(libs.mockito.android)
-    androidTestImplementation(libs.room.testing)
     androidTestImplementation(libs.fragment.testing)
     androidTestImplementation(libs.arch.core.testing)
 }

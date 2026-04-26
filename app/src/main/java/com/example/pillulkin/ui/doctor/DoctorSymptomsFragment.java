@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,11 +16,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.pillulkin.R;
 import com.example.pillulkin.databinding.FragmentDoctorSymptomsBinding;
 import com.example.pillulkin.ui.adapter.SymptomsAdapter;
-import com.example.pillulkin.ui.patient.SymptomsViewModel;
 
 public class DoctorSymptomsFragment extends Fragment {
     private FragmentDoctorSymptomsBinding binding;
-    private SymptomsViewModel viewModel;
+    private DoctorCodeEntryViewModel viewModel;
     private SymptomsAdapter adapter;
 
     @Nullable
@@ -34,30 +34,22 @@ public class DoctorSymptomsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        try {
-            viewModel = new ViewModelProvider(this).get(SymptomsViewModel.class);
-            setupToolbar();
-            setupRecyclerView();
-            observeData();
-        } catch (Exception e) {
-            if (binding != null) {
-                binding.rvSymptoms.setVisibility(View.GONE);
-            }
-        }
+        viewModel = new ViewModelProvider(requireActivity()).get(DoctorCodeEntryViewModel.class);
+
+        setupToolbar();
+        setupRecyclerView();
+        observeData();
     }
 
     private void setupToolbar() {
         binding.toolbar.setNavigationOnClickListener(v -> {
-            if (getActivity() != null) {
-                getActivity().onBackPressed();
-            }
+            if (getActivity() != null) getActivity().onBackPressed();
         });
 
         binding.toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_doctor_medicine) {
+            int id = item.getItemId();
+            if (id == R.id.action_doctor_medicine) {
                 Navigation.findNavController(requireView()).popBackStack();
-                return true;
-            } else if (item.getItemId() == R.id.action_doctor_symptoms) {
                 return true;
             }
             return false;
@@ -65,32 +57,19 @@ public class DoctorSymptomsFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        if (binding == null || getContext() == null) {
-            return;
-        }
-
-        adapter = new SymptomsAdapter(symptom -> {
-        });
+        adapter = new SymptomsAdapter(null, false);
 
         binding.rvSymptoms.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvSymptoms.setAdapter(adapter);
     }
 
     private void observeData() {
-        if (viewModel == null) {
-            return;
-        }
-
         viewModel.getSymptoms().observe(getViewLifecycleOwner(), symptoms -> {
             if (adapter != null && binding != null) {
                 adapter.submitList(symptoms);
-                if (symptoms == null || symptoms.isEmpty()) {
-                    binding.rvSymptoms.setVisibility(View.GONE);
-                    binding.emptyState.setVisibility(View.VISIBLE);
-                } else {
-                    binding.rvSymptoms.setVisibility(View.VISIBLE);
-                    binding.emptyState.setVisibility(View.GONE);
-                }
+                boolean empty = symptoms == null || symptoms.isEmpty();
+                binding.rvSymptoms.setVisibility(empty ? View.GONE : View.VISIBLE);
+                binding.emptyState.setVisibility(empty ? View.VISIBLE : View.GONE);
             }
         });
     }

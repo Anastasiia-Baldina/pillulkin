@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,16 +16,17 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.pillulkin.R;
-import com.example.pillulkin.data.local.entity.MedicineEntity;
+import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 import com.example.pillulkin.databinding.FragmentAddMedicineBinding;
-import com.example.pillulkin.utils.ValidationUtils;
+import com.example.pillulkin.ui.adapter.ReferenceMedicineAdapter;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Calendar;
 
 public class AddMedicineFragment extends Fragment {
     protected FragmentAddMedicineBinding binding;
     protected AddEditMedicineViewModel viewModel;
-    protected String selectedDate = "";
+    private ReferenceMedicineAdapter searchAdapter;
 
     @Nullable
     @Override
@@ -39,91 +42,92 @@ public class AddMedicineFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(AddEditMedicineViewModel.class);
 
         setupToolbar();
-        setupDatePicker();
-        setupSaveButton();
+        setupSearch();
+        observeData();
     }
 
     private void setupToolbar() {
         binding.toolbar.setNavigationOnClickListener(v -> {
             Navigation.findNavController(v).popBackStack();
         });
-    }
 
-    private void setupDatePicker() {
-        binding.etExpiration.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
-            DatePickerDialog dialog = new DatePickerDialog(
-                requireContext(),
-                (datePicker, year, month, day) -> {
-                    selectedDate = String.format("%02d.%02d.%04d", day, month + 1, year);
-                    binding.etExpiration.setText(selectedDate);
-                },
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            );
-            dialog.getDatePicker().setMinDate(System.currentTimeMillis());
-            dialog.show();
+        binding.toolbar.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.action_symptoms) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_symptoms);
+                return true;
+            } else if (id == R.id.action_profile) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_profile);
+                return true;
+            } else if (id == R.id.action_generate_code) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                return true;
+            } else if (id == R.id.action_logout) {
+                Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                return true;
+            }
+            return false;
         });
     }
 
-    private void setupSaveButton() {
-        binding.btnSave.setOnClickListener(v -> {
-            if (validateInput()) {
-                MedicineEntity medicine = createMedicine();
-                viewModel.saveMedicine(medicine);
-                Toast.makeText(requireContext(), R.string.success_saved, Toast.LENGTH_SHORT).show();
-                Navigation.findNavController(v).popBackStack();
+    private void setupSearch() {
+        searchAdapter = new ReferenceMedicineAdapter(medicine -> showAddDialog(medicine));
+        binding.rvSearchResults.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(requireContext()));
+        binding.rvSearchResults.setAdapter(searchAdapter);
+
+        binding.btnSearch.setOnClickListener(v -> {
+            String query = binding.etSearch.getText().toString().trim();
+            if (!query.isEmpty()) {
+                viewModel.searchMedicines(query);
             }
+        });
+
+        binding.etSearch.setOnEditorActionListener((v, actionId, event) -> {
+            String query = binding.etSearch.getText().toString().trim();
+            if (!query.isEmpty()) {
+                viewModel.searchMedicines(query);
+            }
+            return true;
         });
     }
 
-    protected boolean validateInput() {
-        boolean isValid = true;
+    private void showAddDialog(ReferenceMedicineResponse medicine) {
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_medicine, null);
+        TextView tvName = dialogView.findViewById(R.id.tvMedicineNameDialog);
+        EditText etExpiration = dialogView.findViewById(R.id.etExpirationDate);
+        EditText etQuantity = dialogView.findViewById(R.id.etQuantity);
 
-        String name = binding.etName.getText().toString().trim();
-        if (!ValidationUtils.isValidName(name)) {
-            binding.etName.setError(getString(R.string.validation_required));
-            isValid = false;
-        }
+        tvName.setText(medicine.getName());
 
-        String dosage = binding.etDosage.getText().toString().trim();
-        if (!ValidationUtils.isValidDosage(dosage)) {
-            binding.etDosage.setError(getString(R.string.validation_required));
-            isValid = false;
-        }
+        etExpiration.setFocusable(false);
+        etExpiration.setOnClickListener(v -> {
+            Calendar c = Calendar.getInstance();
+            new DatePickerDialog(requireContext(), (view, year, month, dayOfMonth) -> {
+                String date = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth);
+                etExpiration.setText(date);
+            }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
+        });
 
-        if (!ValidationUtils.isValidExpirationDate(selectedDate)) {
-            binding.etExpiration.setError(getString(R.string.validation_required));
-            isValid = false;
-        }
-
-        String quantityStr = binding.etQuantity.getText().toString().trim();
-        if (!quantityStr.isEmpty()) {
-            try {
-                int quantity = Integer.parseInt(quantityStr);
-                if (!ValidationUtils.isValidQuantity(quantity)) {
-                    binding.etQuantity.setError(getString(R.string.validation_invalid_quantity));
-                    isValid = false;
-                }
-            } catch (NumberFormatException e) {
-                binding.etQuantity.setError(getString(R.string.validation_invalid_quantity));
-                isValid = false;
-            }
-        }
-
-        return isValid;
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.add_medicine_title)
+                .setView(dialogView)
+                .setPositiveButton(R.string.save, (dialog, which) -> {
+                    String expDate = etExpiration.getText().toString().trim();
+                    String quantity = etQuantity.getText().toString().trim();
+                    viewModel.addMedicine(medicine.getId(), expDate.isEmpty() ? null : expDate, quantity.isEmpty() ? null : quantity);
+                    Toast.makeText(requireContext(), R.string.success_saved, Toast.LENGTH_SHORT).show();
+                    Navigation.findNavController(requireView()).popBackStack();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
-    protected MedicineEntity createMedicine() {
-        String name = binding.etName.getText().toString().trim();
-        String dosage = binding.etDosage.getText().toString().trim();
-        String quantityStr = binding.etQuantity.getText().toString().trim();
-        int quantity = quantityStr.isEmpty() ? 0 : Integer.parseInt(quantityStr);
-        String form = binding.etForm.getText().toString().trim();
-        String comment = binding.etComment.getText().toString().trim();
-
-        return new MedicineEntity(name, dosage, selectedDate, quantity, form, comment);
+    private void observeData() {
+        viewModel.getSearchResults().observe(getViewLifecycleOwner(), results -> {
+            if (results != null) {
+                searchAdapter.submitList(results);
+            }
+        });
     }
 
     @Override

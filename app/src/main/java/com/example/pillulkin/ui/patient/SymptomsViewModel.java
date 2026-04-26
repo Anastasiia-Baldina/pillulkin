@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
-import com.example.pillulkin.data.local.entity.SymptomEntity;
+import com.example.pillulkin.data.remote.model.PatientSymptomResponse;
 import com.example.pillulkin.data.repository.SymptomsRepository;
 
 import java.util.List;
@@ -19,16 +19,27 @@ public class SymptomsViewModel extends AndroidViewModel {
         repository = new SymptomsRepository(application);
     }
 
-    public LiveData<List<SymptomEntity>> getSymptoms() {
+    public LiveData<List<PatientSymptomResponse>> getSymptoms() {
         return repository.getAllSymptoms();
     }
 
-    public void addSymptom(String description) {
-        SymptomEntity symptom = new SymptomEntity(description, System.currentTimeMillis());
-        repository.insert(symptom);
+    public LiveData<Boolean> isLoading() {
+        return repository.isLoading();
     }
 
-    public void deleteSymptom(SymptomEntity symptom) {
-        repository.delete(symptom);
+    public LiveData<String> getError() {
+        return repository.getError();
+    }
+
+    public void loadSymptoms() {
+        repository.loadSymptoms();
+    }
+
+    public void addSymptom(String symptom) {
+        repository.addSymptom(symptom);
+    }
+
+    public void deleteSymptom(long symptomId) {
+        repository.deleteSymptom(symptomId);
     }
 }

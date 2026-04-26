@@ -14,6 +14,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.pillulkin.R;
+import com.example.pillulkin.data.remote.model.PatientSymptomResponse;
 import com.example.pillulkin.databinding.FragmentSymptomsBinding;
 import com.example.pillulkin.ui.adapter.SymptomsAdapter;
 
@@ -47,11 +48,26 @@ public class SymptomsFragment extends Fragment {
                 getActivity().onBackPressed();
             }
         });
+
+        binding.toolbar.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.action_profile) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_profile);
+                return true;
+            } else if (id == R.id.action_generate_code) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                return true;
+            } else if (id == R.id.action_logout) {
+                Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                return true;
+            }
+            return false;
+        });
     }
 
     private void setupRecyclerView() {
         adapter = new SymptomsAdapter(symptom -> {
-            viewModel.deleteSymptom(symptom);
+            viewModel.deleteSymptom(symptom.getId());
             Toast.makeText(requireContext(), R.string.success_deleted, Toast.LENGTH_SHORT).show();
         });
 
@@ -61,15 +77,15 @@ public class SymptomsFragment extends Fragment {
 
     private void setupAddButton() {
         binding.btnAdd.setOnClickListener(v -> {
-            String description = binding.etSymptom.getText() != null ? 
+            String symptom = binding.etSymptom.getText() != null ? 
                 binding.etSymptom.getText().toString().trim() : "";
             
-            if (description.isEmpty()) {
+            if (symptom.isEmpty()) {
                 binding.etSymptom.setError(getString(R.string.validation_required));
                 return;
             }
 
-            viewModel.addSymptom(description);
+            viewModel.addSymptom(symptom);
             binding.etSymptom.setText("");
             binding.etSymptom.setError(null);
             Toast.makeText(requireContext(), R.string.symptom_added, Toast.LENGTH_SHORT).show();
@@ -79,7 +95,7 @@ public class SymptomsFragment extends Fragment {
     private void observeData() {
         viewModel.getSymptoms().observe(getViewLifecycleOwner(), symptoms -> {
             adapter.submitList(symptoms);
-            updateEmptyState(symptoms.isEmpty());
+            updateEmptyState(symptoms == null || symptoms.isEmpty());
         });
     }
 

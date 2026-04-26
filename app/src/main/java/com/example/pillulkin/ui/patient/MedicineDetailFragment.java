@@ -13,15 +13,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.pillulkin.R;
-import com.example.pillulkin.data.local.entity.MedicineEntity;
 import com.example.pillulkin.databinding.FragmentMedicineDetailBinding;
-import com.example.pillulkin.utils.DateUtils;
 
 public class MedicineDetailFragment extends Fragment {
     private FragmentMedicineDetailBinding binding;
-    private AddEditMedicineViewModel viewModel;
-    private long medicineId;
-    private MedicineEntity currentMedicine;
 
     @Nullable
     @Override
@@ -34,70 +29,79 @@ public class MedicineDetailFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(AddEditMedicineViewModel.class);
-
-        if (getArguments() != null) {
-            medicineId = getArguments().getLong("medicineId");
-        }
 
         setupToolbar();
+        loadMedicineDetails();
         setupButtons();
-        loadMedicine();
     }
 
     private void setupToolbar() {
         binding.toolbar.setNavigationOnClickListener(v -> {
             Navigation.findNavController(v).popBackStack();
         });
+
+        binding.toolbar.setOnMenuItemClickListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.action_symptoms) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_symptoms);
+                return true;
+            } else if (id == R.id.action_profile) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_profile);
+                return true;
+            } else if (id == R.id.action_generate_code) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                return true;
+            } else if (id == R.id.action_logout) {
+                Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                return true;
+            }
+            return false;
+        });
+    }
+
+    private void loadMedicineDetails() {
+        if (getArguments() == null) return;
+
+        String name = getArguments().getString("medicineName", "");
+        String dosage = getArguments().getString("dosage", "");
+        String form = getArguments().getString("form", "");
+        String expirationDate = getArguments().getString("expirationDate");
+        String quantity = getArguments().getString("quantity");
+
+        binding.tvName.setText(name);
+        binding.tvDosage.setText(getString(R.string.medicine_dosage) + ": " + dosage);
+        binding.tvForm.setText(getString(R.string.medicine_form) + ": " + form);
+
+        if (expirationDate != null && !expirationDate.isEmpty()) {
+            binding.tvExpiration.setText(getString(R.string.medicine_expiration) + ": " + expirationDate);
+            binding.tvExpiration.setVisibility(View.VISIBLE);
+        } else {
+            binding.tvExpiration.setVisibility(View.GONE);
+        }
+
+        if (quantity != null && !quantity.isEmpty()) {
+            binding.tvQuantity.setText("Количество: " + quantity);
+            binding.tvQuantity.setVisibility(View.VISIBLE);
+        } else {
+            binding.tvQuantity.setVisibility(View.GONE);
+        }
+
+        binding.tvStatus.setVisibility(View.GONE);
+        binding.tvComment.setVisibility(View.GONE);
     }
 
     private void setupButtons() {
-        binding.btnEdit.setOnClickListener(v -> {
-            Bundle args = new Bundle();
-            args.putLong("medicineId", medicineId);
-            Navigation.findNavController(v).navigate(R.id.editMedicineFragment, args);
-        });
+        binding.btnEdit.setVisibility(View.GONE);
 
-        binding.btnDelete.setOnClickListener(v -> {
-            if (currentMedicine != null) {
-                viewModel.deleteMedicine(currentMedicine);
+        if (getArguments() != null) {
+            long medicineId = getArguments().getLong("medicineId", -1);
+            binding.btnDelete.setOnClickListener(v -> {
+                AddEditMedicineViewModel viewModel = new ViewModelProvider(this).get(AddEditMedicineViewModel.class);
+                viewModel.deleteMedicine(medicineId);
                 Toast.makeText(requireContext(), R.string.success_deleted, Toast.LENGTH_SHORT).show();
                 Navigation.findNavController(v).popBackStack();
-            }
-        });
-    }
-
-    private void loadMedicine() {
-        viewModel.getMedicine(medicineId).observe(getViewLifecycleOwner(), medicine -> {
-            if (medicine != null) {
-                currentMedicine = medicine;
-                binding.tvName.setText(medicine.getName());
-                binding.tvDosage.setText(getString(R.string.medicine_dosage) + ": " + medicine.getDosage());
-                binding.tvForm.setText(getString(R.string.medicine_form) + ": " + medicine.getForm());
-                binding.tvExpiration.setText(getString(R.string.medicine_expiration) + ": " + medicine.getExpirationDate());
-                binding.tvQuantity.setText(getString(R.string.medicine_quantity) + ": " + medicine.getQuantity());
-
-                if (medicine.getComment() != null && !medicine.getComment().isEmpty()) {
-                    binding.tvComment.setVisibility(View.VISIBLE);
-                    binding.tvComment.setText(getString(R.string.medicine_comment) + ": " + medicine.getComment());
-                } else {
-                    binding.tvComment.setVisibility(View.GONE);
-                }
-
-                String status = DateUtils.getExpirationStatus(medicine.getExpirationDate());
-                if ("EXPIRED".equals(status)) {
-                    binding.tvStatus.setText(R.string.medicine_status_expired);
-                    binding.tvStatus.getBackground().setTint(requireContext().getColor(R.color.expired));
-                    binding.tvStatus.setTextColor(requireContext().getColor(R.color.on_error));
-                } else if ("EXPIRING_SOON".equals(status)) {
-                    binding.tvStatus.setText(R.string.medicine_status_expiring_soon);
-                    binding.tvStatus.getBackground().setTint(requireContext().getColor(R.color.warning));
-                } else {
-                    binding.tvStatus.setText(R.string.medicine_status_valid);
-                    binding.tvStatus.getBackground().setTint(requireContext().getColor(R.color.valid));
-                }
-            }
-        });
+            });
+        }
     }
 
     @Override

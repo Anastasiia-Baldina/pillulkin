@@ -13,14 +13,15 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.pillulkin.R;
+import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
 import com.example.pillulkin.databinding.FragmentDoctorMedicineListBinding;
 import com.example.pillulkin.ui.adapter.MedicineAdapter;
-import com.example.pillulkin.ui.patient.MedicineListViewModel;
-import com.example.pillulkin.utils.DateUtils;
+
+import java.util.ArrayList;
 
 public class DoctorMedicineListFragment extends Fragment {
     private FragmentDoctorMedicineListBinding binding;
-    private MedicineListViewModel viewModel;
+    private DoctorCodeEntryViewModel viewModel;
     private MedicineAdapter adapter;
 
     @Nullable
@@ -34,18 +35,15 @@ public class DoctorMedicineListFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
-        try {
-            viewModel = new ViewModelProvider(this).get(MedicineListViewModel.class);
-            setupToolbar();
-            setupRecyclerView();
-            setupSearchButton();
-            observeData();
-        } catch (Exception e) {
-            if (binding != null) {
-                binding.rvMedicines.setVisibility(View.GONE);
-            }
-        }
+
+        viewModel = new ViewModelProvider(requireActivity()).get(DoctorCodeEntryViewModel.class);
+
+        setupToolbar();
+        setupRecyclerView();
+        setupSearchButton();
+        observeData();
+
+        viewModel.loadPatientData();
     }
 
     private void setupToolbar() {
@@ -53,20 +51,16 @@ public class DoctorMedicineListFragment extends Fragment {
             try {
                 Navigation.findNavController(v).popBackStack();
             } catch (Exception e) {
-                if (getActivity() != null) {
-                    getActivity().onBackPressed();
-                }
+                if (getActivity() != null) getActivity().onBackPressed();
             }
         });
 
         binding.toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_doctor_medicine) {
-                return true;
-            } else if (item.getItemId() == R.id.action_doctor_symptoms) {
+            int id = item.getItemId();
+            if (id == R.id.action_doctor_symptoms) {
                 try {
                     Navigation.findNavController(requireView()).navigate(R.id.action_doctorMedicineList_to_symptoms);
-                } catch (Exception e) {
-                }
+                } catch (Exception ignored) {}
                 return true;
             }
             return false;
@@ -74,51 +68,94 @@ public class DoctorMedicineListFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        if (binding == null || getContext() == null) {
-            return;
-        }
-        
-        adapter = new MedicineAdapter(medicine -> {
-        }, medicine -> {
-            try {
-                return DateUtils.getExpirationStatus(medicine.getExpirationDate());
-            } catch (Exception e) {
-                return "VALID";
-            }
-        });
+        adapter = new MedicineAdapter(medicine -> {});
 
         binding.rvMedicines.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvMedicines.setAdapter(adapter);
     }
 
     private void setupSearchButton() {
-        if (binding == null) {
-            return;
-        }
-        
         binding.btnSearch.setOnClickListener(v -> {
             try {
                 Navigation.findNavController(v).navigate(R.id.action_doctorMedicineList_to_search);
-            } catch (Exception e) {
-            }
+            } catch (Exception ignored) {}
         });
     }
 
     private void observeData() {
-        if (viewModel == null) {
-            return;
-        }
-        
+        viewModel.getPatientData().observe(getViewLifecycleOwner(), data -> {
+            if (data != null) {
+                viewModel.extractDataFromResponse(data);
+                showPatientInfo(data);
+            }
+        });
+
         viewModel.getMedicines().observe(getViewLifecycleOwner(), medicines -> {
             if (adapter != null && binding != null) {
                 adapter.submitList(medicines);
-                if (medicines == null || medicines.isEmpty()) {
-                    binding.rvMedicines.setVisibility(View.GONE);
-                } else {
-                    binding.rvMedicines.setVisibility(View.VISIBLE);
-                }
+                boolean empty = medicines == null || medicines.isEmpty();
+                binding.rvMedicines.setVisibility(empty ? View.GONE : View.VISIBLE);
             }
         });
+    }
+
+    private void showPatientInfo(com.example.pillulkin.data.remote.model.DoctorFullDataResponse data) {
+        if (binding == null) return;
+
+        com.example.pillulkin.data.remote.model.PatientProfileResponse profile = data.getProfile();
+        boolean hasInfo = false;
+
+        if (profile != null) {
+            if (profile.getName() != null && !profile.getName().isEmpty()) {
+                binding.tvPatientName.setText(profile.getName());
+                binding.tvPatientName.setVisibility(View.VISIBLE);
+                hasInfo = true;
+            } else {
+                binding.tvPatientName.setVisibility(View.GONE);
+            }
+
+            if (profile.getAge() != null) {
+                binding.tvPatientAge.setText("Возраст: " + profile.getAge());
+                binding.tvPatientAge.setVisibility(View.VISIBLE);
+                hasInfo = true;
+            } else {
+                binding.tvPatientAge.setVisibility(View.GONE);
+            }
+
+            if (profile.getAllergies() != null && !profile.getAllergies().isEmpty()) {
+                binding.tvPatientAllergies.setText("Аллергии: " + profile.getAllergies());
+                binding.tvPatientAllergies.setVisibility(View.VISIBLE);
+                hasInfo = true;
+            } else {
+                binding.tvPatientAllergies.setVisibility(View.GONE);
+            }
+
+            if (profile.getContraindications() != null && !profile.getContraindications().isEmpty()) {
+                binding.tvPatientContraindications.setText("Противопоказания: " + profile.getContraindications());
+                binding.tvPatientContraindications.setVisibility(View.VISIBLE);
+                hasInfo = true;
+            } else {
+                binding.tvPatientContraindications.setVisibility(View.GONE);
+            }
+
+            if (profile.getNotes() != null && !profile.getNotes().isEmpty()) {
+                binding.tvPatientNotes.setText("Заметки: " + profile.getNotes());
+                binding.tvPatientNotes.setVisibility(View.VISIBLE);
+                hasInfo = true;
+            } else {
+                binding.tvPatientNotes.setVisibility(View.GONE);
+            }
+        }
+
+        if (data.getEmail() != null && !data.getEmail().isEmpty()) {
+            binding.tvPatientEmail.setText(data.getEmail());
+            binding.tvPatientEmail.setVisibility(View.VISIBLE);
+            hasInfo = true;
+        } else {
+            binding.tvPatientEmail.setVisibility(View.GONE);
+        }
+
+        binding.patientInfoScroll.setVisibility(hasInfo ? View.VISIBLE : View.GONE);
     }
 
     @Override

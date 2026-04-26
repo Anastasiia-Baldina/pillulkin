@@ -12,35 +12,39 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.pillulkin.R;
-import com.example.pillulkin.data.local.entity.SymptomEntity;
+import com.example.pillulkin.data.remote.model.PatientSymptomResponse;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class SymptomsAdapter extends ListAdapter<SymptomEntity, SymptomsAdapter.SymptomViewHolder> {
+public class SymptomsAdapter extends ListAdapter<PatientSymptomResponse, SymptomsAdapter.SymptomViewHolder> {
     private final OnSymptomDeleteListener deleteListener;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
+    private final boolean showDeleteButton;
 
     public interface OnSymptomDeleteListener {
-        void onDelete(SymptomEntity symptom);
+        void onDelete(PatientSymptomResponse symptom);
     }
 
     public SymptomsAdapter(OnSymptomDeleteListener deleteListener) {
-        super(DIFF_CALLBACK);
-        this.deleteListener = deleteListener;
+        this(deleteListener, true);
     }
 
-    private static final DiffUtil.ItemCallback<SymptomEntity> DIFF_CALLBACK = new DiffUtil.ItemCallback<SymptomEntity>() {
+    public SymptomsAdapter(OnSymptomDeleteListener deleteListener, boolean showDeleteButton) {
+        super(DIFF_CALLBACK);
+        this.deleteListener = deleteListener;
+        this.showDeleteButton = showDeleteButton;
+    }
+
+    private static final DiffUtil.ItemCallback<PatientSymptomResponse> DIFF_CALLBACK = new DiffUtil.ItemCallback<PatientSymptomResponse>() {
         @Override
-        public boolean areItemsTheSame(@NonNull SymptomEntity oldItem, @NonNull SymptomEntity newItem) {
-            return oldItem.getId() == newItem.getId();
+        public boolean areItemsTheSame(@NonNull PatientSymptomResponse oldItem, @NonNull PatientSymptomResponse newItem) {
+            return oldItem.getId().equals(newItem.getId());
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull SymptomEntity oldItem, @NonNull SymptomEntity newItem) {
-            return oldItem.getDescription().equals(newItem.getDescription()) &&
-                   oldItem.getTimestamp() == newItem.getTimestamp();
+        public boolean areContentsTheSame(@NonNull PatientSymptomResponse oldItem, @NonNull PatientSymptomResponse newItem) {
+            return oldItem.getSymptom().equals(newItem.getSymptom());
         }
     };
 
@@ -53,8 +57,7 @@ public class SymptomsAdapter extends ListAdapter<SymptomEntity, SymptomsAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull SymptomViewHolder holder, int position) {
-        SymptomEntity symptom = getItem(position);
-        holder.bind(symptom);
+        holder.bind(getItem(position));
     }
 
     class SymptomViewHolder extends RecyclerView.ViewHolder {
@@ -69,10 +72,34 @@ public class SymptomsAdapter extends ListAdapter<SymptomEntity, SymptomsAdapter.
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }
 
-        void bind(SymptomEntity symptom) {
-            tvDescription.setText(symptom.getDescription());
-            tvTimestamp.setText(dateFormat.format(new Date(symptom.getTimestamp())));
-            btnDelete.setOnClickListener(v -> deleteListener.onDelete(symptom));
+        void bind(PatientSymptomResponse symptom) {
+            tvDescription.setText(symptom.getSymptom());
+            if (symptom.getTimestamp() != null && !symptom.getTimestamp().isEmpty()) {
+                tvTimestamp.setText(formatTimestamp(symptom.getTimestamp()));
+                tvTimestamp.setVisibility(View.VISIBLE);
+            } else {
+                tvTimestamp.setVisibility(View.GONE);
+            }
+            if (showDeleteButton && deleteListener != null) {
+                btnDelete.setVisibility(View.VISIBLE);
+                btnDelete.setOnClickListener(v -> deleteListener.onDelete(symptom));
+            } else {
+                btnDelete.setVisibility(View.GONE);
+            }
+        }
+
+        private String formatTimestamp(String timestamp) {
+            try {
+                SimpleDateFormat input = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+                Date date = input.parse(timestamp);
+                SimpleDateFormat output = new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault());
+                return output.format(date);
+            } catch (Exception e) {
+                if (timestamp.length() > 19) {
+                    return timestamp.substring(0, 19).replace("T", " ");
+                }
+                return timestamp;
+            }
         }
     }
 }

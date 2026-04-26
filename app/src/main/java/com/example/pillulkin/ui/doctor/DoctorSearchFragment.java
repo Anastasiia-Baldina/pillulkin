@@ -10,14 +10,21 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.pillulkin.R;
+import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 import com.example.pillulkin.databinding.FragmentDoctorSearchBinding;
+import com.example.pillulkin.ui.adapter.ReferenceMedicineAdapter;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class DoctorSearchFragment extends Fragment {
     private FragmentDoctorSearchBinding binding;
     private DoctorSearchViewModel viewModel;
-    private boolean isDiagnosisMode = true;
+    private ReferenceMedicineAdapter adapter;
+    private boolean isSymptomMode = true;
 
     @Nullable
     @Override
@@ -35,6 +42,7 @@ public class DoctorSearchFragment extends Fragment {
         setupToolbar();
         setupChips();
         setupSearchButton();
+        setupRecyclerView();
         observeData();
     }
 
@@ -43,9 +51,7 @@ public class DoctorSearchFragment extends Fragment {
             try {
                 Navigation.findNavController(v).popBackStack();
             } catch (Exception e) {
-                if (getActivity() != null) {
-                    getActivity().onBackPressed();
-                }
+                if (getActivity() != null) getActivity().onBackPressed();
             }
         });
     }
@@ -53,10 +59,10 @@ public class DoctorSearchFragment extends Fragment {
     private void setupChips() {
         binding.chipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (checkedIds.contains(R.id.chipDiagnosis)) {
-                isDiagnosisMode = true;
+                isSymptomMode = true;
                 binding.etQuery.setHint(R.string.search_type_diagnosis);
             } else if (checkedIds.contains(R.id.chipMedicine)) {
-                isDiagnosisMode = false;
+                isSymptomMode = false;
                 binding.etQuery.setHint(R.string.search_type_medicine);
             }
         });
@@ -64,13 +70,12 @@ public class DoctorSearchFragment extends Fragment {
 
     private void setupSearchButton() {
         binding.btnSearch.setOnClickListener(v -> {
-            if (binding == null || binding.etQuery == null) {
-                return;
-            }
+            if (binding.etQuery == null) return;
             String query = binding.etQuery.getText() != null ? binding.etQuery.getText().toString().trim() : "";
             if (!query.isEmpty()) {
-                if (isDiagnosisMode) {
-                    viewModel.searchByDiagnosis(query);
+                if (isSymptomMode) {
+                    List<String> symptoms = Arrays.asList(query.split("[,;]\\s*"));
+                    viewModel.searchBySymptoms(symptoms);
                 } else {
                     viewModel.searchByMedicineName(query);
                 }
@@ -78,16 +83,18 @@ public class DoctorSearchFragment extends Fragment {
         });
     }
 
+    private void setupRecyclerView() {
+        adapter = new ReferenceMedicineAdapter(null);
+        if (binding.rvResults != null) {
+            binding.rvResults.setLayoutManager(new LinearLayoutManager(requireContext()));
+            binding.rvResults.setAdapter(adapter);
+        }
+    }
+
     private void observeData() {
-        viewModel.getSearchResult().observe(getViewLifecycleOwner(), result -> {
-            if (result != null && binding != null) {
-                try {
-                    Bundle args = new Bundle();
-                    args.putString("query", result.getQuery());
-                    args.putString("queryType", result.getQueryType());
-                    Navigation.findNavController(requireView()).navigate(R.id.action_search_to_results, args);
-                } catch (Exception e) {
-                }
+        viewModel.getSearchResults().observe(getViewLifecycleOwner(), results -> {
+            if (results != null && adapter != null) {
+                adapter.submitList(results);
             }
         });
     }

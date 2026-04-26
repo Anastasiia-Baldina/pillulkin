@@ -11,38 +11,30 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.pillulkin.R;
-import com.example.pillulkin.data.local.entity.MedicineEntity;
-import com.example.pillulkin.utils.DateUtils;
+import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
 
-public class MedicineAdapter extends ListAdapter<MedicineEntity, MedicineAdapter.MedicineViewHolder> {
+public class MedicineAdapter extends ListAdapter<PatientMedicineResponse, MedicineAdapter.MedicineViewHolder> {
     private final OnMedicineClickListener listener;
-    private final StatusProvider statusProvider;
 
     public interface OnMedicineClickListener {
-        void onMedicineClick(MedicineEntity medicine);
+        void onMedicineClick(PatientMedicineResponse medicine);
     }
 
-    public interface StatusProvider {
-        String getStatus(MedicineEntity medicine);
-    }
-
-    public MedicineAdapter(OnMedicineClickListener listener, StatusProvider statusProvider) {
+    public MedicineAdapter(OnMedicineClickListener listener) {
         super(DIFF_CALLBACK);
         this.listener = listener;
-        this.statusProvider = statusProvider;
     }
 
-    private static final DiffUtil.ItemCallback<MedicineEntity> DIFF_CALLBACK = new DiffUtil.ItemCallback<MedicineEntity>() {
+    private static final DiffUtil.ItemCallback<PatientMedicineResponse> DIFF_CALLBACK = new DiffUtil.ItemCallback<PatientMedicineResponse>() {
         @Override
-        public boolean areItemsTheSame(@NonNull MedicineEntity oldItem, @NonNull MedicineEntity newItem) {
-            return oldItem.getId() == newItem.getId();
+        public boolean areItemsTheSame(@NonNull PatientMedicineResponse oldItem, @NonNull PatientMedicineResponse newItem) {
+            return oldItem.getId().equals(newItem.getId());
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull MedicineEntity oldItem, @NonNull MedicineEntity newItem) {
-            return oldItem.getName().equals(newItem.getName()) &&
-                   oldItem.getDosage().equals(newItem.getDosage()) &&
-                   oldItem.getExpirationDate().equals(newItem.getExpirationDate());
+        public boolean areContentsTheSame(@NonNull PatientMedicineResponse oldItem, @NonNull PatientMedicineResponse newItem) {
+            return oldItem.getMedicineName().equals(newItem.getMedicineName()) &&
+                   oldItem.getDosage().equals(newItem.getDosage());
         }
     };
 
@@ -55,47 +47,43 @@ public class MedicineAdapter extends ListAdapter<MedicineEntity, MedicineAdapter
 
     @Override
     public void onBindViewHolder(@NonNull MedicineViewHolder holder, int position) {
-        MedicineEntity medicine = getItem(position);
-        holder.bind(medicine);
+        holder.bind(getItem(position));
     }
 
     class MedicineViewHolder extends RecyclerView.ViewHolder {
         private final TextView tvName;
-        private final TextView tvStatus;
         private final TextView tvDosage;
         private final TextView tvExpiration;
+        private final TextView tvStatus;
 
         MedicineViewHolder(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvMedicineName);
-            tvStatus = itemView.findViewById(R.id.tvStatus);
             tvDosage = itemView.findViewById(R.id.tvDosage);
             tvExpiration = itemView.findViewById(R.id.tvExpiration);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
         }
 
-        void bind(MedicineEntity medicine) {
-            tvName.setText(medicine.getName());
-            tvDosage.setText(String.format("%s • %s", medicine.getDosage(), medicine.getForm()));
+        void bind(PatientMedicineResponse medicine) {
+            tvName.setText(medicine.getMedicineName());
+            String dosageText = medicine.getDosage();
+            if (medicine.getForm() != null && !medicine.getForm().isEmpty()) {
+                dosageText += " \u2022 " + medicine.getForm();
+            }
+            tvDosage.setText(dosageText);
 
-            String expirationText = itemView.getContext().getString(R.string.medicine_expiration) + ": " + medicine.getExpirationDate();
-            tvExpiration.setText(expirationText);
-
-            String status = statusProvider.getStatus(medicine);
-            if ("EXPIRED".equals(status)) {
-                tvStatus.setText(R.string.medicine_status_expired);
-                tvStatus.setBackgroundResource(R.drawable.bg_status_badge);
-                tvStatus.getBackground().setTint(itemView.getContext().getColor(R.color.expired));
-                tvStatus.setTextColor(itemView.getContext().getColor(R.color.on_error));
-            } else if ("EXPIRING_SOON".equals(status)) {
-                tvStatus.setText(R.string.medicine_status_expiring_soon);
-                tvStatus.setBackgroundResource(R.drawable.bg_status_badge);
-                tvStatus.getBackground().setTint(itemView.getContext().getColor(R.color.warning));
-                tvStatus.setTextColor(itemView.getContext().getColor(R.color.on_background));
+            if (medicine.getExpirationDate() != null && !medicine.getExpirationDate().isEmpty()) {
+                tvExpiration.setText(itemView.getContext().getString(R.string.medicine_expiration) + ": " + medicine.getExpirationDate());
+                tvExpiration.setVisibility(View.VISIBLE);
             } else {
-                tvStatus.setText(R.string.medicine_status_valid);
-                tvStatus.setBackgroundResource(R.drawable.bg_status_badge);
-                tvStatus.getBackground().setTint(itemView.getContext().getColor(R.color.valid));
-                tvStatus.setTextColor(itemView.getContext().getColor(R.color.on_background));
+                tvExpiration.setVisibility(View.GONE);
+            }
+
+            if (medicine.getQuantity() != null && !medicine.getQuantity().isEmpty()) {
+                tvStatus.setText(medicine.getQuantity());
+                tvStatus.setVisibility(View.VISIBLE);
+            } else {
+                tvStatus.setVisibility(View.GONE);
             }
 
             itemView.setOnClickListener(v -> listener.onMedicineClick(medicine));

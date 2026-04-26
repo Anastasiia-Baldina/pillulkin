@@ -15,6 +15,7 @@
         app:titleTextColor="@color/on_primary"
         app:navigationIcon="@drawable/ic_arrow_back"
         app:navigationIconTint="@color/on_primary"
+        app:menu="@menu/menu_patient"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView

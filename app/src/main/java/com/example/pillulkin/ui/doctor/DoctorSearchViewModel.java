@@ -7,43 +7,47 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.pillulkin.data.repository.RecommendationRepository;
-import com.example.pillulkin.domain.model.RecommendationResult;
-import com.example.pillulkin.domain.usecase.GetMedicineByDiagnosisUseCase;
-import com.example.pillulkin.domain.usecase.GetMedicineRecommendationsUseCase;
+import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
+import com.example.pillulkin.data.repository.MedicineRepository;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class DoctorSearchViewModel extends AndroidViewModel {
-    private final GetMedicineRecommendationsUseCase getMedicineRecommendationsUseCase;
-    private final GetMedicineByDiagnosisUseCase getMedicineByDiagnosisUseCase;
-    private final MutableLiveData<RecommendationResult> searchResult = new MutableLiveData<>();
+    private final MedicineRepository repository;
     private final MutableLiveData<Boolean> isSearching = new MutableLiveData<>(false);
+    private final MutableLiveData<String> error = new MutableLiveData<>();
 
     public DoctorSearchViewModel(@NonNull Application application) {
         super(application);
-        RecommendationRepository repository = new RecommendationRepository(application);
-        getMedicineRecommendationsUseCase = new GetMedicineRecommendationsUseCase(repository);
-        getMedicineByDiagnosisUseCase = new GetMedicineByDiagnosisUseCase(repository);
+        repository = new MedicineRepository(application);
     }
 
-    public LiveData<RecommendationResult> getSearchResult() {
-        return searchResult;
+    public LiveData<List<ReferenceMedicineResponse>> getSearchResults() {
+        return repository.getSearchResults();
     }
 
     public LiveData<Boolean> isSearching() {
         return isSearching;
     }
 
-    public void searchByMedicineName(String medicineName) {
+    public LiveData<String> getError() {
+        return error;
+    }
+
+    public void searchByMedicineName(String query) {
         isSearching.setValue(true);
-        RecommendationResult result = getMedicineRecommendationsUseCase.execute(medicineName);
-        searchResult.setValue(result);
-        isSearching.setValue(false);
+        repository.searchMedicines(query);
+    }
+
+    public void searchBySymptoms(List<String> symptoms) {
+        isSearching.setValue(true);
+        repository.getRecommendations(symptoms);
     }
 
     public void searchByDiagnosis(String diagnosis) {
         isSearching.setValue(true);
-        RecommendationResult result = getMedicineByDiagnosisUseCase.execute(diagnosis);
-        searchResult.setValue(result);
-        isSearching.setValue(false);
+        List<String> symptoms = Arrays.asList(diagnosis.split("[,;]\\s*"));
+        repository.getRecommendations(symptoms);
     }
 }

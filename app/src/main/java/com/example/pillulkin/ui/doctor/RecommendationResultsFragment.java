@@ -14,12 +14,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.pillulkin.R;
 import com.example.pillulkin.databinding.FragmentRecommendationResultsBinding;
-import com.example.pillulkin.ui.adapter.RecommendationAdapter;
+import com.example.pillulkin.ui.adapter.ReferenceMedicineAdapter;
 
 public class RecommendationResultsFragment extends Fragment {
     private FragmentRecommendationResultsBinding binding;
     private DoctorSearchViewModel viewModel;
-    private RecommendationAdapter adapter;
+    private ReferenceMedicineAdapter adapter;
 
     @Nullable
     @Override
@@ -32,7 +32,7 @@ public class RecommendationResultsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         try {
             viewModel = new ViewModelProvider(requireActivity()).get(DoctorSearchViewModel.class);
             setupToolbar();
@@ -51,44 +51,34 @@ public class RecommendationResultsFragment extends Fragment {
             try {
                 Navigation.findNavController(v).popBackStack();
             } catch (Exception e) {
-                if (getActivity() != null) {
-                    getActivity().onBackPressed();
-                }
+                if (getActivity() != null) getActivity().onBackPressed();
             }
         });
     }
 
     private void setupRecyclerView() {
-        if (binding == null || getContext() == null) {
-            return;
-        }
-        adapter = new RecommendationAdapter();
+        if (binding == null || getContext() == null) return;
+
+        adapter = new ReferenceMedicineAdapter(null);
         binding.rvResults.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvResults.setAdapter(adapter);
     }
 
     private void observeData() {
-        if (viewModel == null) {
-            return;
-        }
-        
-        viewModel.getSearchResult().observe(getViewLifecycleOwner(), result -> {
-            if (binding == null) {
-                return;
-            }
-            if (result != null) {
-                binding.tvQuery.setText(result.getQuery());
+        if (viewModel == null) return;
 
-                if (result.isEmpty()) {
-                    binding.emptyState.setVisibility(View.VISIBLE);
-                    binding.rvResults.setVisibility(View.GONE);
-                } else {
-                    binding.emptyState.setVisibility(View.GONE);
-                    binding.rvResults.setVisibility(View.VISIBLE);
-                    if (adapter != null) {
-                        adapter.submitList(result.getItems());
-                    }
+        viewModel.getSearchResults().observe(getViewLifecycleOwner(), results -> {
+            if (binding == null) return;
+
+            if (results != null && !results.isEmpty()) {
+                binding.emptyState.setVisibility(View.GONE);
+                binding.rvResults.setVisibility(View.VISIBLE);
+                if (adapter != null) {
+                    adapter.submitList(results);
                 }
+            } else {
+                binding.emptyState.setVisibility(View.VISIBLE);
+                binding.rvResults.setVisibility(View.GONE);
             }
         });
     }

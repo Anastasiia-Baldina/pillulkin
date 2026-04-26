@@ -7,31 +7,38 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.data.repository.DoctorAccessCodeRepository;
-import com.example.pillulkin.domain.usecase.GenerateAccessCodeUseCase;
 
 public class GenerateCodeViewModel extends AndroidViewModel {
-    private final GenerateAccessCodeUseCase generateCodeUseCase;
-    private final MutableLiveData<String> generatedCode = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> codeGenerated = new MutableLiveData<>(false);
+    private final DoctorAccessCodeRepository repository;
+    private final MutableLiveData<Boolean> isCodeGenerated = new MutableLiveData<>(false);
 
     public GenerateCodeViewModel(@NonNull Application application) {
         super(application);
-        DoctorAccessCodeRepository repository = new DoctorAccessCodeRepository(application);
-        generateCodeUseCase = new GenerateAccessCodeUseCase(repository);
+        repository = new DoctorAccessCodeRepository(application);
     }
 
     public LiveData<String> getGeneratedCode() {
-        return generatedCode;
+        return repository.getGeneratedCode();
+    }
+
+    public LiveData<Boolean> isLoading() {
+        return repository.isLoading();
+    }
+
+    public LiveData<String> getError() {
+        return repository.getError();
     }
 
     public LiveData<Boolean> isCodeGenerated() {
-        return codeGenerated;
+        return isCodeGenerated;
     }
 
-    public void generateCode() {
-        String code = generateCodeUseCase.execute();
-        generatedCode.setValue(code);
-        codeGenerated.setValue(true);
+    public void generateCode(int minutes) {
+        NetworkModule nm = NetworkModule.getInstance(getApplication());
+        long patientId = nm.getPatientId();
+        repository.generateAccessCode(patientId, minutes);
+        isCodeGenerated.postValue(true);
     }
 }
