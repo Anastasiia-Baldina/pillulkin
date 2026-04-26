@@ -123,12 +123,7 @@ public class SymptomsFragment extends Fragment {
 
             DiagnosisDialogFragment dialog = DiagnosisDialogFragment.newInstance(
                     DiagnosisDialogFragment.STUB_SYMPTOMS,
-                    binaryList -> {
-                        binding.tvDiagnosisResult.setText(
-                                getString(R.string.diagnose_result_label) + " " +
-                                        getString(R.string.diagnose_result_placeholder));
-                        binding.tvDiagnosisResult.setVisibility(View.VISIBLE);
-                    }
+                    binaryList -> viewModel.diagnose(binaryList)
             );
             dialog.show(getChildFragmentManager(), "diagnosis_dialog");
         });
@@ -138,6 +133,14 @@ public class SymptomsFragment extends Fragment {
         viewModel.getSymptoms().observe(getViewLifecycleOwner(), symptoms -> {
             adapter.submitList(symptoms);
             updateEmptyState(symptoms == null || symptoms.isEmpty());
+        });
+
+        viewModel.getDiagnosisResult().observe(getViewLifecycleOwner(), result -> {
+            if (result != null) {
+                binding.tvDiagnosisResult.setText(
+                        getString(R.string.diagnose_result_label) + " " + result);
+                binding.tvDiagnosisResult.setVisibility(View.VISIBLE);
+            }
         });
     }
 

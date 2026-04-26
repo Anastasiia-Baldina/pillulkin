@@ -1,6 +1,8 @@
 package com.example.pillulkin.data.remote;
 
 import com.example.pillulkin.data.remote.model.AuthResponse;
+import com.example.pillulkin.data.remote.model.DiagnosisRequest;
+import com.example.pillulkin.data.remote.model.DiagnosisResponse;
 import com.example.pillulkin.data.remote.model.DoctorCodeResponse;
 import com.example.pillulkin.data.remote.model.DoctorFullDataResponse;
 import com.example.pillulkin.data.remote.model.DoctorLoginRequest;
@@ -98,6 +100,9 @@ public interface PillulkinApi {
     @GET("api/v1/medicines/recommendations")
     Call<List<ReferenceMedicineResponse>> getRecommendations(
             @Query("symptoms") List<String> symptoms);
+
+    @POST("api/v1/diagnose")
+    Call<DiagnosisResponse> diagnose(@Body DiagnosisRequest request);
 
     @GET("api/v1/doctor/validate")
     Call<Map<String, Boolean>> validateDoctorToken(

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.example.pillulkin.data.remote.model.AuthResponse;
+import com.example.pillulkin.data.remote.model.DiagnosisRequest;
+import com.example.pillulkin.data.remote.model.DiagnosisResponse;
 import com.example.pillulkin.data.remote.model.DoctorCodeResponse;
 import com.example.pillulkin.data.remote.model.DoctorFullDataResponse;
 import com.example.pillulkin.data.remote.model.DoctorLoginRequest;
@@ -209,6 +211,10 @@ public class NetworkModule {
 
     public Call<DoctorFullDataResponse> getDoctorPatientData() {
         return api.getPatientFullData(getDoctorToken(), getDoctorPatientId());
+    }
+
+    public Call<DiagnosisResponse> diagnose(List<Integer> binarySymptoms) {
+        return api.diagnose(new DiagnosisRequest(binarySymptoms));
     }
 
     @Deprecated
