@@ -137,4 +137,18 @@
     <string name="recommendation_cabinet_header">Препараты из аптечки пациента</string>
     <string name="recommendation_other_header">Подходящие препараты</string>
     <string name="recommendation_in_cabinet">Есть в аптечке</string>
+    <string name="prescription_dosage_title">Способ применения</string>
+    <string name="prescription_frequency_label">Количество приемов в день</string>
+    <string name="prescription_meal_timing_label">Время приема</string>
+    <string name="prescription_time_offset_label">За/через сколько</string>
+    <string name="prescription_custom_label">Или введите свой вариант</string>
+    <string name="prescription_custom_hint">Например: 3 раза в день во время еды</string>
+    <string name="prescription_add_button">Добавить к назначенным препаратам</string>
+    <string name="prescription_added">Препарат назначен</string>
+    <string name="active_substance_label">Действующее вещество:</string>
+    <string name="prescriptions_title">Назначения</string>
+    <string name="prescription_empty">Нет назначений</string>
+    <string name="prescription_move_to_cabinet">Переместить в аптечку</string>
+    <string name="prescription_moved">Перемещено в аптечку</string>
+    <string name="prescription_date_label">Назначено:</string>
 </resources>

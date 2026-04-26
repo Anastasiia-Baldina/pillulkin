@@ -91,7 +91,18 @@ public class DoctorSearchFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        adapter = new RecommendationSectionAdapter(null);
+        adapter = new RecommendationSectionAdapter(medicine -> {
+            long patientId = sharedViewModel.getPatientData().getValue() != null
+                    ? sharedViewModel.getPatientData().getValue().getPatientId() : -1;
+            Bundle args = new Bundle();
+            args.putLong("medicineId", medicine.getId());
+            args.putString("medicineName", medicine.getName());
+            args.putString("dosage", medicine.getDosage() != null ? medicine.getDosage() : "");
+            args.putString("form", medicine.getForm() != null ? medicine.getForm() : "");
+            args.putString("activeSubstance", medicine.getActiveSubstance() != null ? medicine.getActiveSubstance() : "");
+            args.putLong("patientId", patientId);
+            Navigation.findNavController(requireView()).navigate(R.id.action_search_to_medicineDetail, args);
+        });
         if (binding.rvResults != null) {
             binding.rvResults.setLayoutManager(new LinearLayoutManager(requireContext()));
             binding.rvResults.setAdapter(adapter);

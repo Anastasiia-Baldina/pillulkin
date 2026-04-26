@@ -66,7 +66,11 @@
         android:id="@+id/patientProfileFragment"
         android:name="com.example.pillulkin.ui.patient.PatientProfileFragment"
         android:label="Профиль"
-        tools:layout="@layout/fragment_patient_profile" />
+        tools:layout="@layout/fragment_patient_profile">
+        <action
+            android:id="@+id/action_profile_to_prescriptions"
+            app:destination="@id/prescriptionsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/symptomsFragment"
@@ -79,4 +83,10 @@
         android:name="com.example.pillulkin.ui.patient.GenerateCodeFragment"
         android:label="Код доступа"
         tools:layout="@layout/fragment_generate_code" />
+
+    <fragment
+        android:id="@+id/prescriptionsFragment"
+        android:name="com.example.pillulkin.ui.patient.PrescriptionsFragment"
+        android:label="Назначения"
+        tools:layout="@layout/fragment_prescriptions" />
 </navigation>

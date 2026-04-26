@@ -19,6 +19,8 @@ import com.example.pillulkin.data.remote.model.PatientProfileResponse;
 import com.example.pillulkin.data.remote.model.PatientRegisterRequest;
 import com.example.pillulkin.data.remote.model.PatientSymptomRequest;
 import com.example.pillulkin.data.remote.model.PatientSymptomResponse;
+import com.example.pillulkin.data.remote.model.PrescriptionRequest;
+import com.example.pillulkin.data.remote.model.PrescriptionResponse;
 import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 
 import java.util.List;
@@ -215,6 +217,22 @@ public class NetworkModule {
 
     public Call<DiagnosisResponse> diagnose(List<Integer> binarySymptoms) {
         return api.diagnose(new DiagnosisRequest(binarySymptoms));
+    }
+
+    public Call<PrescriptionResponse> createPrescription(long patientId, PrescriptionRequest request) {
+        return api.createPrescription(patientId, request);
+    }
+
+    public Call<List<PrescriptionResponse>> getPrescriptions(long patientId) {
+        return api.getPrescriptions(patientId, "active");
+    }
+
+    public Call<List<PrescriptionResponse>> getAllPrescriptions(long patientId) {
+        return api.getPrescriptions(patientId, null);
+    }
+
+    public Call<Void> moveToCabinet(long patientId, long prescriptionId) {
+        return api.moveToCabinet(patientId, prescriptionId);
     }
 
     @Deprecated

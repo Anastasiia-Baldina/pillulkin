@@ -23,11 +23,9 @@
         android:name="com.example.pillulkin.ui.doctor.DoctorMedicineListFragment"
         android:label="Аптечка пациента"
         tools:layout="@layout/fragment_doctor_medicine_list">
-
         <action
             android:id="@+id/action_doctorMedicineList_to_search"
             app:destination="@id/doctorSearchFragment" />
-
         <action
             android:id="@+id/action_doctorMedicineList_to_symptoms"
             app:destination="@id/doctorSymptomsFragment" />
@@ -38,10 +36,12 @@
         android:name="com.example.pillulkin.ui.doctor.DoctorSearchFragment"
         android:label="Подбор лекарств"
         tools:layout="@layout/fragment_doctor_search">
-
         <action
             android:id="@+id/action_search_to_results"
             app:destination="@id/recommendationResultsFragment" />
+        <action
+            android:id="@+id/action_search_to_medicineDetail"
+            app:destination="@id/doctorMedicineDetailFragment" />
     </fragment>
 
     <fragment
@@ -49,14 +49,8 @@
         android:name="com.example.pillulkin.ui.doctor.RecommendationResultsFragment"
         android:label="Результаты"
         tools:layout="@layout/fragment_recommendation_results">
-
-        <argument
-            android:name="query"
-            app:argType="string" />
-
-        <argument
-            android:name="queryType"
-            app:argType="string" />
+        <argument android:name="query" app:argType="string" />
+        <argument android:name="queryType" app:argType="string" />
     </fragment>
 
     <fragment
@@ -64,5 +58,18 @@
         android:name="com.example.pillulkin.ui.doctor.DoctorSymptomsFragment"
         android:label="Симптомы пациента"
         tools:layout="@layout/fragment_doctor_symptoms">
+    </fragment>
+
+    <fragment
+        android:id="@+id/doctorMedicineDetailFragment"
+        android:name="com.example.pillulkin.ui.doctor.DoctorMedicineDetailFragment"
+        android:label="Карточка препарата"
+        tools:layout="@layout/fragment_doctor_medicine_detail">
+        <argument android:name="medicineId" app:argType="long" />
+        <argument android:name="medicineName" app:argType="string" />
+        <argument android:name="dosage" app:argType="string" android:defaultValue="" />
+        <argument android:name="form" app:argType="string" android:defaultValue="" />
+        <argument android:name="activeSubstance" app:argType="string" android:defaultValue="" />
+        <argument android:name="patientId" app:argType="long" />
     </fragment>
 </navigation>

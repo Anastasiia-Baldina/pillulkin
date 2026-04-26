@@ -16,6 +16,8 @@ import com.example.pillulkin.data.remote.model.PatientProfileResponse;
 import com.example.pillulkin.data.remote.model.PatientRegisterRequest;
 import com.example.pillulkin.data.remote.model.PatientSymptomRequest;
 import com.example.pillulkin.data.remote.model.PatientSymptomResponse;
+import com.example.pillulkin.data.remote.model.PrescriptionRequest;
+import com.example.pillulkin.data.remote.model.PrescriptionResponse;
 import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 
 import java.util.List;
@@ -112,4 +114,19 @@ public interface PillulkinApi {
     Call<DoctorFullDataResponse> getPatientFullData(
             @Header("X-Doctor-Token") String token,
             @Path("patientId") long patientId);
+
+    @POST("api/v1/patients/{patientId}/prescriptions")
+    Call<PrescriptionResponse> createPrescription(
+            @Path("patientId") long patientId,
+            @Body PrescriptionRequest request);
+
+    @GET("api/v1/patients/{patientId}/prescriptions")
+    Call<List<PrescriptionResponse>> getPrescriptions(
+            @Path("patientId") long patientId,
+            @Query("status") String status);
+
+    @PUT("api/v1/patients/{patientId}/prescriptions/{prescriptionId}/move-to-cabinet")
+    Call<Void> moveToCabinet(
+            @Path("patientId") long patientId,
+            @Path("prescriptionId") long prescriptionId);
 }
