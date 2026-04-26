@@ -134,4 +134,7 @@
     <string name="diagnose_result_label">Предполагаемый диагноз:</string>
     <string name="diagnose_result_placeholder">Простуда</string>
     <string name="medicine_expired_label">Просрочено</string>
+    <string name="recommendation_cabinet_header">Препараты из аптечки пациента</string>
+    <string name="recommendation_other_header">Подходящие препараты</string>
+    <string name="recommendation_in_cabinet">Есть в аптечке</string>
 </resources>
