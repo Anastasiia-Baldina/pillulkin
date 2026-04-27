@@ -130,7 +130,6 @@
     <string name="diagnose_error_no_symptoms">Для предположения диагноза необходимо ввести хотя бы 1 симптом</string>
     <string name="diagnose_error_all_outdated">Требуется хотя бы 1 актуальный симптом</string>
     <string name="diagnose_confirm">Подтвердить</string>
-    <string name="diagnose_title">Уточните симптомы</string>
     <string name="diagnose_result_label">Предполагаемый диагноз:</string>
     <string name="diagnose_result_placeholder">Простуда</string>
     <string name="medicine_expired_label">Просрочено</string>
@@ -173,5 +172,11 @@
     <string name="local_mode_label">Локальный режим</string>
     <string name="google_sign_in_prompt">Авторизуйтесь через Google для сохранения данных на сервере</string>
     <string name="prescriptions_auth_required">Назначения доступны после авторизации через Google</string>
+    <string name="diagnose_title">Выберите симптомы</string>
+    <string name="diagnose_questions_title">Уточните симптомы</string>
+    <string name="diagnose_filter_actual">Только актуальные</string>
+    <string name="diagnose_filter_all">Все симптомы</string>
+    <string name="diagnose_select_all">Выбрать все</string>
+    <string name="diagnosis_disclaimer">Результат носит информационный характер и не является медицинским диагнозом.</string>
     <string name="skip_auth">Продолжить без авторизации</string>
 </resources>

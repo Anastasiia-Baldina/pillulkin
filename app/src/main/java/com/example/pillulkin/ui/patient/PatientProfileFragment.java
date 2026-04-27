@@ -57,7 +57,6 @@ public class PatientProfileFragment extends Fragment {
 
         setupToolbar();
         setupSaveButton();
-        setupPrescriptionsButton();
         setupAuthStatus();
         loadProfile();
     }
@@ -157,6 +156,9 @@ public class PatientProfileFragment extends Fragment {
             } else if (id == R.id.action_notifications) {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_notifications);
                 return true;
+            } else if (id == R.id.action_prescriptions) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_prescriptions);
+                return true;
             } else if (id == R.id.action_logout) {
                 showLogoutDialog();
                 return true;
@@ -186,12 +188,6 @@ public class PatientProfileFragment extends Fragment {
             viewModel.saveProfile(name, age, allergies, contraindications, notes);
             Toast.makeText(requireContext(), R.string.success_saved, Toast.LENGTH_SHORT).show();
             Navigation.findNavController(v).popBackStack();
-        });
-    }
-
-    private void setupPrescriptionsButton() {
-        binding.btnPrescriptions.setOnClickListener(v -> {
-            Navigation.findNavController(v).navigate(R.id.action_profile_to_prescriptions);
         });
     }
 

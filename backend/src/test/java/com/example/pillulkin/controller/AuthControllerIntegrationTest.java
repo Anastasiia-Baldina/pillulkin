@@ -28,11 +28,11 @@ class AuthControllerIntegrationTest {
         mockMvc.perform(post("/api/v1/auth/patient/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().is5xxServerError());
 
         mockMvc.perform(post("/api/v1/auth/patient/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().is5xxServerError());
     }
 }

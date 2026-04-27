@@ -8,10 +8,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.example.pillulkin.data.remote.NetworkModule;
+import com.example.pillulkin.data.remote.model.DiagnosisRequest;
 import com.example.pillulkin.data.remote.model.DiagnosisResponse;
 import com.example.pillulkin.data.remote.model.PatientSymptomResponse;
 import com.example.pillulkin.data.repository.SymptomsRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -21,6 +23,9 @@ import retrofit2.Response;
 public class SymptomsViewModel extends AndroidViewModel {
     private final SymptomsRepository repository;
     private final MutableLiveData<String> diagnosisResult = new MutableLiveData<>();
+    private final MutableLiveData<List<String>> suggestedQuestions = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> isLoadingDiagnosis = new MutableLiveData<>(false);
+    private List<String> currentSymptoms = new ArrayList<>();
 
     public SymptomsViewModel(@NonNull Application application) {
         super(application);
@@ -43,6 +48,14 @@ public class SymptomsViewModel extends AndroidViewModel {
         return diagnosisResult;
     }
 
+    public LiveData<List<String>> getSuggestedQuestions() {
+        return suggestedQuestions;
+    }
+
+    public LiveData<Boolean> isLoadingDiagnosis() {
+        return isLoadingDiagnosis;
+    }
+
     public void loadSymptoms() {
         repository.loadSymptoms();
     }
@@ -59,11 +72,41 @@ public class SymptomsViewModel extends AndroidViewModel {
         repository.renewSymptom(symptomId);
     }
 
-    public void diagnose(List<Integer> binarySymptoms) {
-        NetworkModule networkModule = NetworkModule.getInstance(getApplication());
-        networkModule.diagnose(binarySymptoms).enqueue(new Callback<DiagnosisResponse>() {
+    public void diagnoseInitial(List<String> symptoms) {
+        currentSymptoms = new ArrayList<>(symptoms);
+        isLoadingDiagnosis.postValue(true);
+        DiagnosisRequest request = new DiagnosisRequest(symptoms, "initial", null);
+        NetworkModule.getInstance(getApplication()).diagnose(request).enqueue(new Callback<DiagnosisResponse>() {
             @Override
             public void onResponse(Call<DiagnosisResponse> call, Response<DiagnosisResponse> response) {
+                isLoadingDiagnosis.postValue(false);
+                if (response.isSuccessful() && response.body() != null) {
+                    DiagnosisResponse body = response.body();
+                    if (body.getSuggestedQuestions() != null && !body.getSuggestedQuestions().isEmpty()) {
+                        suggestedQuestions.postValue(body.getSuggestedQuestions());
+                    } else {
+                        requestFinalDiagnosis(new ArrayList<>());
+                    }
+                } else {
+                    diagnosisResult.postValue("Ошибка диагностики");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DiagnosisResponse> call, Throwable t) {
+                isLoadingDiagnosis.postValue(false);
+                diagnosisResult.postValue("Ошибка сети: " + t.getMessage());
+            }
+        });
+    }
+
+    public void requestFinalDiagnosis(List<String> answers) {
+        isLoadingDiagnosis.postValue(true);
+        DiagnosisRequest request = new DiagnosisRequest(currentSymptoms, "final", answers);
+        NetworkModule.getInstance(getApplication()).diagnose(request).enqueue(new Callback<DiagnosisResponse>() {
+            @Override
+            public void onResponse(Call<DiagnosisResponse> call, Response<DiagnosisResponse> response) {
+                isLoadingDiagnosis.postValue(false);
                 if (response.isSuccessful() && response.body() != null) {
                     DiagnosisResponse body = response.body();
                     String text = body.getDiagnosis();
@@ -78,6 +121,7 @@ public class SymptomsViewModel extends AndroidViewModel {
 
             @Override
             public void onFailure(Call<DiagnosisResponse> call, Throwable t) {
+                isLoadingDiagnosis.postValue(false);
                 diagnosisResult.postValue("Ошибка сети: " + t.getMessage());
             }
         });

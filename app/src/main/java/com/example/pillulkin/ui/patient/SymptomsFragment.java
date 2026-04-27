@@ -20,6 +20,7 @@ import com.example.pillulkin.databinding.FragmentSymptomsBinding;
 import com.example.pillulkin.ui.adapter.SymptomsAdapter;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SymptomsFragment extends Fragment {
@@ -65,6 +66,9 @@ public class SymptomsFragment extends Fragment {
             } else if (id == R.id.action_notifications) {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_notifications);
                 return true;
+            } else if (id == R.id.action_prescriptions) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_prescriptions);
+                return true;
             } else if (id == R.id.action_logout) {
                 showLogoutDialog();
                 return true;
@@ -91,9 +95,9 @@ public class SymptomsFragment extends Fragment {
 
     private void setupAddButton() {
         binding.btnAdd.setOnClickListener(v -> {
-            String symptom = binding.etSymptom.getText() != null ? 
-                binding.etSymptom.getText().toString().trim() : "";
-            
+            String symptom = binding.etSymptom.getText() != null ?
+                    binding.etSymptom.getText().toString().trim() : "";
+
             if (symptom.isEmpty()) {
                 binding.etSymptom.setError(getString(R.string.validation_required));
                 return;
@@ -114,23 +118,21 @@ public class SymptomsFragment extends Fragment {
                 return;
             }
 
-            boolean hasActual = false;
+            List<String> symptomTexts = new ArrayList<>();
+            List<String> symptomTimestamps = new ArrayList<>();
             for (PatientSymptomResponse s : symptoms) {
-                if (!SymptomsAdapter.isSymptomOutdated(s.getTimestamp())) {
-                    hasActual = true;
-                    break;
+                if (s.getSymptom() != null) {
+                    symptomTexts.add(s.getSymptom());
+                    symptomTimestamps.add(s.getTimestamp() != null ? s.getTimestamp() : "");
                 }
             }
-            if (!hasActual) {
-                Toast.makeText(requireContext(), R.string.diagnose_error_all_outdated, Toast.LENGTH_LONG).show();
-                return;
-            }
 
-            DiagnosisDialogFragment dialog = DiagnosisDialogFragment.newInstance(
-                    DiagnosisDialogFragment.STUB_SYMPTOMS,
-                    binaryList -> viewModel.diagnose(binaryList)
+            DiagnosisDialogFragment dialog = DiagnosisDialogFragment.newSymptomsStep(
+                    symptomTexts,
+                    symptomTimestamps,
+                    selectedSymptoms -> viewModel.diagnoseInitial(selectedSymptoms)
             );
-            dialog.show(getChildFragmentManager(), "diagnosis_dialog");
+            dialog.show(getChildFragmentManager(), "diagnosis_symptoms");
         });
     }
 
@@ -140,10 +142,21 @@ public class SymptomsFragment extends Fragment {
             updateEmptyState(symptoms == null || symptoms.isEmpty());
         });
 
+        viewModel.getSuggestedQuestions().observe(getViewLifecycleOwner(), questions -> {
+            if (questions != null && !questions.isEmpty()) {
+                DiagnosisDialogFragment dialog = DiagnosisDialogFragment.newQuestionsStep(
+                        questions,
+                        answers -> viewModel.requestFinalDiagnosis(answers)
+                );
+                dialog.show(getChildFragmentManager(), "diagnosis_questions");
+            }
+        });
+
         viewModel.getDiagnosisResult().observe(getViewLifecycleOwner(), result -> {
             if (result != null) {
+                String disclaimer = getString(R.string.diagnosis_disclaimer);
                 binding.tvDiagnosisResult.setText(
-                        getString(R.string.diagnose_result_label) + " " + result);
+                        getString(R.string.diagnose_result_label) + " " + result + "\n\n" + disclaimer);
                 binding.tvDiagnosisResult.setVisibility(View.VISIBLE);
             }
         });

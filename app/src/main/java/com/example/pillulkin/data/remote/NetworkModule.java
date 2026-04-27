@@ -271,8 +271,8 @@ public class NetworkModule {
         return api.getPatientFullData(getDoctorToken(), getDoctorPatientId());
     }
 
-    public Call<DiagnosisResponse> diagnose(List<Integer> binarySymptoms) {
-        return api.diagnose(new DiagnosisRequest(binarySymptoms));
+    public Call<DiagnosisResponse> diagnose(DiagnosisRequest request) {
+        return api.diagnose(request);
     }
 
     public Call<PrescriptionResponse> createPrescription(long patientId, PrescriptionRequest request) {

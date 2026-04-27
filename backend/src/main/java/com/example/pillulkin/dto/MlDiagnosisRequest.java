@@ -11,10 +11,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DiagnosisResponse {
-
-    private String diagnosis;
-    private double confidence;
-    private List<String> suggestedQuestions;
-    private boolean isFinal;
+public class MlDiagnosisRequest {
+    private List<String> symptoms;
+    private Integer top_k;
+    private Integer max_questions;
 }

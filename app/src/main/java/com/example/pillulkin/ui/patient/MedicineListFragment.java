@@ -84,6 +84,9 @@ public class MedicineListFragment extends Fragment {
             } else if (id == R.id.action_notifications) {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_notifications);
                 return true;
+            } else if (id == R.id.action_prescriptions) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_prescriptions);
+                return true;
             } else if (id == R.id.action_logout) {
                 showLogoutDialog();
                 return true;

@@ -166,4 +166,8 @@
     <string name="logout_dialog_title">Выход</string>
     <string name="logout_switch_profile">Сменить профиль</string>
     <string name="logout_sign_out">Выйти из аккаунта</string>
+    <string name="diagnose_filter_actual">Только актуальные</string>
+    <string name="diagnose_filter_all">Все симптомы</string>
+    <string name="diagnose_select_all">Выбрать все</string>
+    <string name="diagnose_questions_title">Уточните симптомы</string>
 </resources>

@@ -55,6 +55,9 @@ public class GenerateCodeFragment extends Fragment {
             } else if (id == R.id.action_profile) {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_profile);
                 return true;
+            } else if (id == R.id.action_prescriptions) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_prescriptions);
+                return true;
             } else if (id == R.id.action_logout) {
                 showLogoutDialog();
                 return true;
