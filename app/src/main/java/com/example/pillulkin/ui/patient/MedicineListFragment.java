@@ -221,10 +221,10 @@ public class MedicineListFragment extends Fragment {
                 .setTitle(R.string.logout_dialog_title)
                 .setItems(options, (dialog, which) -> {
                     if (which == 0) {
-                        Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                        Navigation.findNavController(requireView()).popBackStack(R.id.roleSelectionFragment, false);
                     } else {
                         NetworkModule.getInstance(requireContext().getApplicationContext()).clearPatientSession();
-                        Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                        Navigation.findNavController(requireView()).popBackStack(R.id.roleSelectionFragment, false);
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, null)

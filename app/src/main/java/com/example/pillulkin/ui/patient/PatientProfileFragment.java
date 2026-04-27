@@ -1,11 +1,14 @@
 package com.example.pillulkin.ui.patient;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -13,14 +16,30 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.pillulkin.R;
-import com.example.pillulkin.data.remote.model.PatientProfileResponse;
 import com.example.pillulkin.data.remote.NetworkModule;
+import com.example.pillulkin.data.remote.model.AuthResponse;
+import com.example.pillulkin.data.remote.model.PatientProfileResponse;
 import com.example.pillulkin.databinding.FragmentPatientProfileBinding;
+import com.example.pillulkin.sync.LocalSyncHelper;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class PatientProfileFragment extends Fragment {
     private FragmentPatientProfileBinding binding;
     private PatientProfileViewModel viewModel;
+    private NetworkModule networkModule;
+    private GoogleSignInClient googleSignInClient;
+    private ActivityResultLauncher<Intent> googleSignInLauncher;
+
+    private static final String WEB_CLIENT_ID = "796860851053-ajbge1rt3hehhov8t2vi6o66ucrc1osg.apps.googleusercontent.com";
 
     @Nullable
     @Override
@@ -34,11 +53,92 @@ public class PatientProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(this).get(PatientProfileViewModel.class);
+        networkModule = NetworkModule.getInstance(requireContext());
 
         setupToolbar();
         setupSaveButton();
         setupPrescriptionsButton();
+        setupAuthStatus();
         loadProfile();
+    }
+
+    private void setupAuthStatus() {
+        if (networkModule.isLocalMode()) {
+            binding.tvAuthStatus.setText(R.string.local_mode_label);
+            binding.tvAuthStatus.setVisibility(View.VISIBLE);
+            binding.btnGoogleSignIn.setVisibility(View.VISIBLE);
+            binding.tvGooglePrompt.setVisibility(View.VISIBLE);
+            setupGoogleSignIn();
+        } else {
+            binding.tvAuthStatus.setVisibility(View.GONE);
+            binding.btnGoogleSignIn.setVisibility(View.GONE);
+            binding.tvGooglePrompt.setVisibility(View.GONE);
+        }
+    }
+
+    private void setupGoogleSignIn() {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(WEB_CLIENT_ID)
+                .requestEmail()
+                .build();
+
+        googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso);
+
+        googleSignInLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
+                        try {
+                            var task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                            GoogleSignInAccount account = task.getResult(ApiException.class);
+                            if (account.getIdToken() != null) {
+                                authenticateWithBackend(account.getIdToken());
+                            }
+                        } catch (ApiException e) {
+                            Toast.makeText(requireContext(), "Ошибка Google: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+        );
+
+        binding.btnGoogleSignIn.setOnClickListener(v -> {
+            googleSignInClient.signOut().addOnCompleteListener(unused -> {
+                Intent signInIntent = googleSignInClient.getSignInIntent();
+                googleSignInLauncher.launch(signInIntent);
+            });
+        });
+    }
+
+    private void authenticateWithBackend(String idToken) {
+        networkModule.loginWithGoogle(idToken).enqueue(new Callback<AuthResponse>() {
+            @Override
+            public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    AuthResponse auth = response.body();
+                    networkModule.savePatientToken(auth.getToken());
+                    if (auth.getPatientId() != null) {
+                        networkModule.savePatientId(auth.getPatientId());
+                    }
+
+                    if (networkModule.isLocalMode()) {
+                        networkModule.clearLocalMode();
+                        LocalSyncHelper.syncLocalToServer(requireContext().getApplicationContext(), auth.getPatientId());
+                    }
+
+                    binding.tvAuthStatus.setVisibility(View.GONE);
+                    binding.btnGoogleSignIn.setVisibility(View.GONE);
+                    binding.tvGooglePrompt.setVisibility(View.GONE);
+                    Toast.makeText(requireContext(), R.string.success_saved, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(requireContext(), "Ошибка авторизации: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<AuthResponse> call, Throwable t) {
+                Toast.makeText(requireContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setupToolbar() {
@@ -114,10 +214,10 @@ public class PatientProfileFragment extends Fragment {
                 .setTitle(R.string.logout_dialog_title)
                 .setItems(options, (dialog, which) -> {
                     if (which == 0) {
-                        Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                        Navigation.findNavController(requireView()).popBackStack(R.id.roleSelectionFragment, false);
                     } else {
                         NetworkModule.getInstance(requireContext().getApplicationContext()).clearPatientSession();
-                        Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                        Navigation.findNavController(requireView()).popBackStack(R.id.roleSelectionFragment, false);
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, null)

@@ -18,30 +18,6 @@ public class AuthController {
     private final DoctorAccessService doctorAccessService;
     private final GoogleAuthService googleAuthService;
 
-    @PostMapping("/patient/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody PatientRegisterRequest request) {
-        var patient = authService.register(request.getEmail(), request.getPassword());
-        String token = authService.generateToken(patient.getId());
-        var response = AuthResponse.builder()
-                .patientId(patient.getId())
-                .email(patient.getEmail())
-                .token(token)
-                .build();
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/patient/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody PatientLoginRequest request) {
-        var patient = authService.login(request.getEmail(), request.getPassword());
-        String token = authService.generateToken(patient.getId());
-        var response = AuthResponse.builder()
-                .patientId(patient.getId())
-                .email(patient.getEmail())
-                .token(token)
-                .build();
-        return ResponseEntity.ok(response);
-    }
-
     @PostMapping("/patient/google")
     public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleAuthRequest request) {
         var userInfo = googleAuthService.verifyToken(request.getIdToken());

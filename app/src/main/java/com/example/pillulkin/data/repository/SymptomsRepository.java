@@ -12,8 +12,12 @@ import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.data.remote.model.PatientSymptomResponse;
 import com.example.pillulkin.sync.SyncManager;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -43,6 +47,8 @@ public class SymptomsRepository {
             return;
         }
         loadFromCache();
+        if (networkModule.isLocalMode()) return;
+
         isLoading.postValue(true);
         networkModule.getSymptoms().enqueue(new Callback<List<PatientSymptomResponse>>() {
             @Override
@@ -67,10 +73,10 @@ public class SymptomsRepository {
     }
 
     private void loadFromCache() {
-        long patientId = networkModule.getPatientId();
+        long patientId = networkModule.getEffectivePatientId();
         PillulkinDatabase.databaseWriteExecutor.execute(() -> {
             List<CachedSymptom> cached = db.cachedSymptomDao().getSymptoms(patientId);
-            if (cached != null && !cached.isEmpty() && symptomsData.getValue() == null) {
+            if (cached != null && !cached.isEmpty()) {
                 symptomsData.postValue(toResponses(cached));
             }
         });
@@ -113,6 +119,11 @@ public class SymptomsRepository {
             return;
         }
 
+        if (networkModule.isLocalMode()) {
+            addSymptomLocal(symptom);
+            return;
+        }
+
         if (syncManager.isOnline()) {
             isLoading.postValue(true);
             networkModule.addSymptom(symptom).enqueue(new Callback<PatientSymptomResponse>() {
@@ -145,9 +156,35 @@ public class SymptomsRepository {
         }
     }
 
+    private void addSymptomLocal(String symptom) {
+        PillulkinDatabase.databaseWriteExecutor.execute(() -> {
+            long localId = networkModule.generateLocalId();
+            String timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(new Date());
+
+            CachedSymptom cached = new CachedSymptom();
+            cached.setId(localId);
+            cached.setPatientId(NetworkModule.LOCAL_PATIENT_ID);
+            cached.setSymptom(symptom);
+            cached.setTimestamp(timestamp);
+            cached.setActual(true);
+            cached.setCachedAt(System.currentTimeMillis());
+
+            List<CachedSymptom> existing = db.cachedSymptomDao().getSymptoms(NetworkModule.LOCAL_PATIENT_ID);
+            existing.add(cached);
+            db.cachedSymptomDao().insertAll(existing);
+
+            symptomsData.postValue(toResponses(existing));
+        });
+    }
+
     public void deleteSymptom(long symptomId) {
         if (!networkModule.isPatientLoggedIn()) {
             error.postValue("Not authenticated");
+            return;
+        }
+
+        if (networkModule.isLocalMode()) {
+            deleteSymptomLocal(symptomId);
             return;
         }
 
@@ -183,9 +220,29 @@ public class SymptomsRepository {
         }
     }
 
+    private void deleteSymptomLocal(long symptomId) {
+        PillulkinDatabase.databaseWriteExecutor.execute(() -> {
+            List<CachedSymptom> existing = db.cachedSymptomDao().getSymptoms(NetworkModule.LOCAL_PATIENT_ID);
+            List<CachedSymptom> updated = new ArrayList<>();
+            for (CachedSymptom s : existing) {
+                if (s.getId() != symptomId) updated.add(s);
+            }
+            db.cachedSymptomDao().deleteByPatientId(NetworkModule.LOCAL_PATIENT_ID);
+            if (!updated.isEmpty()) {
+                db.cachedSymptomDao().insertAll(updated);
+            }
+            symptomsData.postValue(toResponses(updated));
+        });
+    }
+
     public void renewSymptom(long symptomId) {
         if (!networkModule.isPatientLoggedIn()) {
             error.postValue("Not authenticated");
+            return;
+        }
+
+        if (networkModule.isLocalMode()) {
+            renewSymptomLocal(symptomId);
             return;
         }
 
@@ -206,6 +263,22 @@ public class SymptomsRepository {
                 isLoading.postValue(false);
                 error.postValue("Network error: " + t.getMessage());
             }
+        });
+    }
+
+    private void renewSymptomLocal(long symptomId) {
+        PillulkinDatabase.databaseWriteExecutor.execute(() -> {
+            List<CachedSymptom> existing = db.cachedSymptomDao().getSymptoms(NetworkModule.LOCAL_PATIENT_ID);
+            String newTimestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(new Date());
+            for (CachedSymptom s : existing) {
+                if (s.getId() == symptomId) {
+                    s.setTimestamp(newTimestamp);
+                    s.setActual(true);
+                }
+            }
+            db.cachedSymptomDao().deleteByPatientId(NetworkModule.LOCAL_PATIENT_ID);
+            db.cachedSymptomDao().insertAll(existing);
+            symptomsData.postValue(toResponses(existing));
         });
     }
 

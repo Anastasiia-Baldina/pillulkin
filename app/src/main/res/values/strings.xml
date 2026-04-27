@@ -61,7 +61,7 @@
     
     <!-- Generate Code -->
     <string name="generate_code_title">Код доступа для врача</string>
-    <string name="generate_code_description">Создайте временный код для предоставления врачу доступа к вашей аптечке</string>
+    <string name="generate_code_description">Создайте временный код для предоставления врачу доступа к Вашей аптечке</string>
     <string name="generate_code_button">Сгенерировать код</string>
     <string name="code_validity">Код действителен 1 час</string>
     <string name="copy_code">Скопировать код</string>
@@ -168,4 +168,10 @@
     <string name="logout_dialog_title">Выход</string>
     <string name="logout_switch_profile">Сменить профиль</string>
     <string name="logout_sign_out">Выйти из аккаунта</string>
+    <string name="local_code_description">Создайте код для предоставления врачу доступа к вашей аптечке на этом устройстве</string>
+    <string name="local_code_validity">Код действует только на этом устройстве</string>
+    <string name="local_mode_label">Локальный режим</string>
+    <string name="google_sign_in_prompt">Авторизуйтесь через Google для сохранения данных на сервере</string>
+    <string name="prescriptions_auth_required">Назначения доступны после авторизации через Google</string>
+    <string name="skip_auth">Продолжить без авторизации</string>
 </resources>

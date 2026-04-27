@@ -23,6 +23,9 @@ public class CachedSymptom {
     @ColumnInfo(name = "cached_at")
     private long cachedAt;
 
+    @ColumnInfo(name = "is_actual")
+    private boolean isActual = true;
+
     public long getId() { return id; }
     public void setId(long id) { this.id = id; }
     public long getPatientId() { return patientId; }
@@ -33,4 +36,6 @@ public class CachedSymptom {
     public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
     public long getCachedAt() { return cachedAt; }
     public void setCachedAt(long cachedAt) { this.cachedAt = cachedAt; }
+    public boolean isActual() { return isActual; }
+    public void setActual(boolean actual) { isActual = actual; }
 }

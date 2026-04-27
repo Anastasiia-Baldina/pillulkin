@@ -25,6 +25,7 @@ import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -40,10 +41,15 @@ public class NetworkModule {
     private static final String KEY_DOCTOR_TOKEN = "doctor_token";
     private static final String KEY_DOCTOR_PATIENT_ID = "doctor_patient_id";
     private static final String KEY_DOCTOR_EXPIRES = "doctor_expires";
+    private static final String KEY_LOCAL_MODE = "local_mode";
+    private static final String KEY_LOCAL_NEXT_ID = "local_next_id";
+    private static final String KEY_LOCAL_DOCTOR_CODE = "local_doctor_code";
+    public static final long LOCAL_PATIENT_ID = -1L;
 
     private static NetworkModule instance;
     private final PillulkinApi api;
     private final SharedPreferences prefs;
+    private final AtomicLong localIdCounter = new AtomicLong(-1);
 
     private NetworkModule(Context context) {
         prefs = context.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -119,7 +125,7 @@ public class NetworkModule {
     }
 
     public boolean isPatientLoggedIn() {
-        return getPatientId() > 0;
+        return isLocalMode() || getPatientId() > 0;
     }
 
     public boolean isDoctorLoggedIn() {
@@ -127,10 +133,17 @@ public class NetworkModule {
                 && System.currentTimeMillis() < getDoctorExpires();
     }
 
+    public boolean isGoogleLoggedIn() {
+        return !isLocalMode() && getPatientId() > 0;
+    }
+
     public void clearPatientSession() {
         prefs.edit()
                 .remove(KEY_PATIENT_ID)
                 .remove(KEY_PATIENT_TOKEN)
+                .remove(KEY_LOCAL_MODE)
+                .remove(KEY_LOCAL_DOCTOR_CODE)
+                .remove(KEY_LOCAL_NEXT_ID)
                 .apply();
     }
 
@@ -139,15 +152,58 @@ public class NetworkModule {
                 .remove(KEY_DOCTOR_TOKEN)
                 .remove(KEY_DOCTOR_PATIENT_ID)
                 .remove(KEY_DOCTOR_EXPIRES)
+                .remove(KEY_LOCAL_DOCTOR_CODE)
                 .apply();
     }
 
-    public Call<AuthResponse> register(String email, String password) {
-        return api.registerPatient(new PatientRegisterRequest(email, password));
+    public void setLocalMode() {
+        prefs.edit()
+                .putBoolean(KEY_LOCAL_MODE, true)
+                .putLong(KEY_PATIENT_ID, LOCAL_PATIENT_ID)
+                .apply();
     }
 
-    public Call<AuthResponse> login(String email, String password) {
-        return api.loginPatient(new PatientLoginRequest(email, password));
+    public boolean isLocalMode() {
+        return prefs.getBoolean(KEY_LOCAL_MODE, false);
+    }
+
+    public void clearLocalMode() {
+        prefs.edit().remove(KEY_LOCAL_MODE).apply();
+    }
+
+    public long getEffectivePatientId() {
+        if (isLocalMode()) return LOCAL_PATIENT_ID;
+        return getPatientId();
+    }
+
+    public long generateLocalId() {
+        long nextId = prefs.getLong(KEY_LOCAL_NEXT_ID, -1) - 1;
+        prefs.edit().putLong(KEY_LOCAL_NEXT_ID, nextId).apply();
+        return nextId;
+    }
+
+    public String generateLocalDoctorCode() {
+        int code = 100000 + (int) (Math.random() * 900000);
+        String codeStr = String.valueOf(code);
+        prefs.edit().putString(KEY_LOCAL_DOCTOR_CODE, codeStr).apply();
+        return codeStr;
+    }
+
+    public String getLocalDoctorCode() {
+        return prefs.getString(KEY_LOCAL_DOCTOR_CODE, null);
+    }
+
+    public boolean validateLocalDoctorCode(String code) {
+        String stored = getLocalDoctorCode();
+        return stored != null && stored.equals(code);
+    }
+
+    public boolean isLocalDoctorSession() {
+        return prefs.getBoolean("local_doctor_session", false);
+    }
+
+    public void setLocalDoctorSession(boolean local) {
+        prefs.edit().putBoolean("local_doctor_session", local).apply();
     }
 
     public Call<AuthResponse> doctorLogin(String code) {
@@ -235,23 +291,4 @@ public class NetworkModule {
         return api.moveToCabinet(patientId, prescriptionId);
     }
 
-    @Deprecated
-    public boolean isLoggedIn() {
-        return isPatientLoggedIn();
-    }
-
-    @Deprecated
-    public void saveToken(String token) {
-        savePatientToken(token);
-    }
-
-    @Deprecated
-    public String getToken() {
-        return getPatientToken();
-    }
-
-    @Deprecated
-    public void clearToken() {
-        clearPatientSession();
-    }
 }

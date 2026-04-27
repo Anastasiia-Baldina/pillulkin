@@ -13,6 +13,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.pillulkin.R;
+import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
 import com.example.pillulkin.databinding.FragmentDoctorMedicineListBinding;
 import com.example.pillulkin.ui.adapter.MedicineAdapter;
@@ -43,7 +44,10 @@ public class DoctorMedicineListFragment extends Fragment {
         setupSearchButton();
         observeData();
 
-        viewModel.loadPatientData();
+        NetworkModule nm = NetworkModule.getInstance(requireContext().getApplicationContext());
+        if (!nm.isLocalDoctorSession()) {
+            viewModel.loadPatientData();
+        }
     }
 
     private void setupToolbar() {
@@ -85,7 +89,6 @@ public class DoctorMedicineListFragment extends Fragment {
     private void observeData() {
         viewModel.getPatientData().observe(getViewLifecycleOwner(), data -> {
             if (data != null) {
-                viewModel.extractDataFromResponse(data);
                 showPatientInfo(data);
             }
         });

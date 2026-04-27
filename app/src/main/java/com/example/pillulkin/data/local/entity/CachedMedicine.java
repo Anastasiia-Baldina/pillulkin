@@ -29,6 +29,15 @@ public class CachedMedicine {
     @ColumnInfo(name = "added_at")
     private String addedAt;
 
+    @ColumnInfo(name = "expiration_date")
+    private String expirationDate;
+
+    @ColumnInfo(name = "quantity")
+    private String quantity;
+
+    @ColumnInfo(name = "active_substance")
+    private String activeSubstance;
+
     @ColumnInfo(name = "cached_at")
     private long cachedAt;
 
@@ -46,6 +55,12 @@ public class CachedMedicine {
     public void setForm(String form) { this.form = form; }
     public String getAddedAt() { return addedAt; }
     public void setAddedAt(String addedAt) { this.addedAt = addedAt; }
+    public String getExpirationDate() { return expirationDate; }
+    public void setExpirationDate(String expirationDate) { this.expirationDate = expirationDate; }
+    public String getQuantity() { return quantity; }
+    public void setQuantity(String quantity) { this.quantity = quantity; }
+    public String getActiveSubstance() { return activeSubstance; }
+    public void setActiveSubstance(String activeSubstance) { this.activeSubstance = activeSubstance; }
     public long getCachedAt() { return cachedAt; }
     public void setCachedAt(long cachedAt) { this.cachedAt = cachedAt; }
 }

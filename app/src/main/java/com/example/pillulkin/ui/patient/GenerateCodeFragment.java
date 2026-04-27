@@ -69,7 +69,8 @@ public class GenerateCodeFragment extends Fragment {
         });
 
         binding.btnCopy.setOnClickListener(v -> {
-            String code = viewModel.getGeneratedCode().getValue();
+            String code = viewModel.getLocalCode().getValue();
+            if (code == null) code = viewModel.getGeneratedCode().getValue();
             if (code != null) {
                 ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText("access_code", code);
@@ -81,11 +82,24 @@ public class GenerateCodeFragment extends Fragment {
 
     private void observeData() {
         viewModel.getGeneratedCode().observe(getViewLifecycleOwner(), code -> {
-            binding.tvCode.setText(code);
+            if (code != null) binding.tvCode.setText(code);
+        });
+
+        viewModel.getLocalCode().observe(getViewLifecycleOwner(), code -> {
+            if (code != null) {
+                binding.tvCode.setText(code);
+                binding.tvValidity.setText(R.string.local_code_validity);
+            }
         });
 
         viewModel.isCodeGenerated().observe(getViewLifecycleOwner(), isGenerated -> {
             binding.cardCode.setVisibility(isGenerated ? View.VISIBLE : View.GONE);
+        });
+
+        viewModel.isLocalMode().observe(getViewLifecycleOwner(), isLocal -> {
+            if (isLocal != null && isLocal) {
+                binding.tvDescription.setText(R.string.local_code_description);
+            }
         });
     }
 
@@ -95,10 +109,10 @@ public class GenerateCodeFragment extends Fragment {
                 .setTitle(R.string.logout_dialog_title)
                 .setItems(options, (dialog, which) -> {
                     if (which == 0) {
-                        Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                        Navigation.findNavController(requireView()).popBackStack(R.id.roleSelectionFragment, false);
                     } else {
                         NetworkModule.getInstance(requireContext().getApplicationContext()).clearPatientSession();
-                        Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                        Navigation.findNavController(requireView()).popBackStack(R.id.roleSelectionFragment, false);
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, null)

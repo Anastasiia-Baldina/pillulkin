@@ -18,6 +18,7 @@ import com.example.pillulkin.R;
 import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.data.remote.model.AuthResponse;
 import com.example.pillulkin.databinding.FragmentPatientAuthBinding;
+import com.example.pillulkin.sync.LocalSyncHelper;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -95,8 +96,10 @@ public class PatientAuthFragment extends Fragment {
             });
         });
 
-        binding.btnLogin.setOnClickListener(v -> attemptLogin(false));
-        binding.btnRegister.setOnClickListener(v -> attemptLogin(true));
+        binding.btnSkip.setOnClickListener(v -> {
+            networkModule.setLocalMode();
+            navigateToPatient();
+        });
     }
 
     private void authenticateWithBackend(String idToken) {
@@ -112,6 +115,12 @@ public class PatientAuthFragment extends Fragment {
                     if (auth.getPatientId() != null) {
                         networkModule.savePatientId(auth.getPatientId());
                     }
+
+                    if (networkModule.isLocalMode()) {
+                        networkModule.clearLocalMode();
+                        LocalSyncHelper.syncLocalToServer(requireContext().getApplicationContext(), auth.getPatientId());
+                    }
+
                     navigateToPatient();
                 } else {
                     Toast.makeText(requireContext(), "Ошибка авторизации: " + response.code(), Toast.LENGTH_SHORT).show();
@@ -124,55 +133,6 @@ public class PatientAuthFragment extends Fragment {
                 Toast.makeText(requireContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void attemptLogin(boolean isRegister) {
-        String email = binding.editEmail.getText().toString().trim();
-        String password = binding.editPassword.getText().toString();
-
-        if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(requireContext(), "Заполните все поля", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        binding.progressBar.setVisibility(View.VISIBLE);
-        binding.btnLogin.setEnabled(false);
-        binding.btnRegister.setEnabled(false);
-
-        Callback<AuthResponse> callback = new Callback<AuthResponse>() {
-            @Override
-            public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
-                binding.progressBar.setVisibility(View.GONE);
-                binding.btnLogin.setEnabled(true);
-                binding.btnRegister.setEnabled(true);
-
-                if (response.isSuccessful() && response.body() != null) {
-                    AuthResponse auth = response.body();
-                    networkModule.savePatientToken(auth.getToken());
-                    if (auth.getPatientId() != null) {
-                        networkModule.savePatientId(auth.getPatientId());
-                    }
-                    navigateToPatient();
-                } else {
-                    String msg = isRegister ? "Ошибка регистрации: " : "Неверный email или пароль";
-                    Toast.makeText(requireContext(), msg + response.code(), Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<AuthResponse> call, Throwable t) {
-                binding.progressBar.setVisibility(View.GONE);
-                binding.btnLogin.setEnabled(true);
-                binding.btnRegister.setEnabled(true);
-                Toast.makeText(requireContext(), "Ошибка сети: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        };
-
-        if (isRegister) {
-            networkModule.register(email, password).enqueue(callback);
-        } else {
-            networkModule.login(email, password).enqueue(callback);
-        }
     }
 
     private void navigateToPatient() {

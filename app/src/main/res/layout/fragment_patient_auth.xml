@@ -9,66 +9,54 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Умная аптечка"
-        android:textSize="24sp"
+        android:text="Пилюлькин"
+        android:textSize="36sp"
         android:textStyle="bold"
-        android:layout_marginBottom="32dp" />
+        android:textColor="@color/primary_dark"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Умная аптечка"
+        android:textSize="20sp"
+        android:textStyle="italic"
+        android:textColor="@color/primary"
+        android:layout_marginBottom="48dp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnGoogleSignIn"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:text="Войти через Google"
-        android:layout_marginBottom="24dp"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="или"
-        android:layout_marginBottom="16dp" />
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Email"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editEmail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textEmailAddress" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Пароль"
-        android:layout_marginTop="16dp"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword" />
-    </com.google.android.material.textfield.TextInputLayout>
+        android:layout_marginBottom="16dp"
+        android:textColor="@color/hint" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnLogin"
+        android:id="@+id/btnSkip"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Войти"
-        android:layout_marginTop="24dp" />
+        android:layout_height="56dp"
+        android:text="Продолжить без авторизации"
+        android:textSize="16sp"
+        style="@style/Widget.MaterialComponents.Button.TextButton" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnRegister"
-        android:layout_width="match_parent"
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Регистрация"
+        android:text="Данные будут сохранены на устройстве.\nВы сможете авторизоваться позже."
+        android:textSize="12sp"
+        android:textColor="@color/hint"
+        android:textAlignment="center"
         android:layout_marginTop="8dp"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+        android:layout_marginBottom="16dp" />
 
     <ProgressBar
         android:id="@+id/progressBar"

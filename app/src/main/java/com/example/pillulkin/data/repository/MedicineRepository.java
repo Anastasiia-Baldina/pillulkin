@@ -13,10 +13,13 @@ import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
 import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 import com.example.pillulkin.sync.SyncManager;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -48,6 +51,8 @@ public class MedicineRepository {
             return;
         }
         loadFromCache();
+        if (networkModule.isLocalMode()) return;
+
         isLoading.postValue(true);
         networkModule.getMedicines().enqueue(new Callback<List<PatientMedicineResponse>>() {
             @Override
@@ -74,10 +79,10 @@ public class MedicineRepository {
     }
 
     private void loadFromCache() {
-        long patientId = networkModule.getPatientId();
+        long patientId = networkModule.getEffectivePatientId();
         PillulkinDatabase.databaseWriteExecutor.execute(() -> {
             List<CachedMedicine> cached = db.cachedMedicineDao().getMedicines(patientId);
-            if (cached != null && !cached.isEmpty() && patientMedicinesData.getValue() == null) {
+            if (cached != null && !cached.isEmpty()) {
                 List<PatientMedicineResponse> responses = toResponses(cached);
                 Collections.sort(responses, Comparator.comparing(m -> m.getMedicineName().toLowerCase()));
                 patientMedicinesData.postValue(responses);
@@ -99,6 +104,8 @@ public class MedicineRepository {
                 e.setDosage(r.getDosage());
                 e.setForm(r.getForm());
                 e.setAddedAt(r.getAddedAt());
+                e.setExpirationDate(r.getExpirationDate());
+                e.setQuantity(r.getQuantity());
                 e.setCachedAt(System.currentTimeMillis());
                 entities.add(e);
             }
@@ -117,6 +124,8 @@ public class MedicineRepository {
             r.setDosage(c.getDosage());
             r.setForm(c.getForm());
             r.setAddedAt(c.getAddedAt());
+            r.setExpirationDate(c.getExpirationDate());
+            r.setQuantity(c.getQuantity());
             list.add(r);
         }
         return list;
@@ -127,6 +136,12 @@ public class MedicineRepository {
             error.postValue("Not authenticated");
             return;
         }
+
+        if (networkModule.isLocalMode()) {
+            addPatientMedicineLocal(medicineId, expirationDate, quantity);
+            return;
+        }
+
         if (syncManager.isOnline()) {
             isLoading.postValue(true);
             networkModule.addMedicine(medicineId, expirationDate, quantity).enqueue(new Callback<PatientMedicineResponse>() {
@@ -151,11 +166,66 @@ public class MedicineRepository {
         }
     }
 
+    private void addPatientMedicineLocal(long medicineId, String expirationDate, String quantity) {
+        PillulkinDatabase.databaseWriteExecutor.execute(() -> {
+            List<ReferenceMedicineResponse> refs = null;
+            try {
+                Response<List<ReferenceMedicineResponse>> resp = networkModule.getApi()
+                        .getReferenceMedicines(String.valueOf(medicineId)).execute();
+                if (resp.isSuccessful() && resp.body() != null) {
+                    refs = resp.body();
+                }
+            } catch (Exception ignored) {}
+
+            String medName = "Лекарство #" + medicineId;
+            String dosage = "";
+            String form = "";
+            String activeSubstance = "";
+            if (refs != null) {
+                for (ReferenceMedicineResponse ref : refs) {
+                    if (ref.getId() != null && ref.getId() == medicineId) {
+                        medName = ref.getName() != null ? ref.getName() : medName;
+                        dosage = ref.getDosage() != null ? ref.getDosage() : "";
+                        form = ref.getForm() != null ? ref.getForm() : "";
+                        activeSubstance = ref.getActiveSubstance() != null ? ref.getActiveSubstance() : "";
+                        break;
+                    }
+                }
+            }
+
+            long localId = networkModule.generateLocalId();
+            CachedMedicine cached = new CachedMedicine();
+            cached.setId(localId);
+            cached.setPatientId(NetworkModule.LOCAL_PATIENT_ID);
+            cached.setMedicineId(medicineId);
+            cached.setMedicineName(medName);
+            cached.setDosage(dosage);
+            cached.setForm(form);
+            cached.setActiveSubstance(activeSubstance);
+            cached.setAddedAt(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
+            cached.setExpirationDate(expirationDate);
+            cached.setQuantity(quantity);
+            cached.setCachedAt(System.currentTimeMillis());
+
+            List<CachedMedicine> existing = db.cachedMedicineDao().getMedicines(NetworkModule.LOCAL_PATIENT_ID);
+            existing.add(cached);
+            db.cachedMedicineDao().insertAll(Collections.singletonList(cached));
+
+            patientMedicinesData.postValue(toResponses(existing));
+        });
+    }
+
     public void deletePatientMedicine(long medicineId) {
         if (!networkModule.isPatientLoggedIn()) {
             error.postValue("Not authenticated");
             return;
         }
+
+        if (networkModule.isLocalMode()) {
+            deletePatientMedicineLocal(medicineId);
+            return;
+        }
+
         if (syncManager.isOnline()) {
             isLoading.postValue(true);
             networkModule.deleteMedicine(medicineId).enqueue(new Callback<Void>() {
@@ -188,11 +258,32 @@ public class MedicineRepository {
         }
     }
 
+    private void deletePatientMedicineLocal(long medicineId) {
+        PillulkinDatabase.databaseWriteExecutor.execute(() -> {
+            List<CachedMedicine> existing = db.cachedMedicineDao().getMedicines(NetworkModule.LOCAL_PATIENT_ID);
+            List<CachedMedicine> updated = new ArrayList<>();
+            for (CachedMedicine m : existing) {
+                if (m.getId() != medicineId) updated.add(m);
+            }
+            db.cachedMedicineDao().deleteByPatientId(NetworkModule.LOCAL_PATIENT_ID);
+            if (!updated.isEmpty()) {
+                db.cachedMedicineDao().insertAll(updated);
+            }
+            patientMedicinesData.postValue(toResponses(updated));
+        });
+    }
+
     public void updatePatientMedicine(long patientMedicineId, String expirationDate, String quantity) {
         if (!networkModule.isPatientLoggedIn()) {
             error.postValue("Not authenticated");
             return;
         }
+
+        if (networkModule.isLocalMode()) {
+            updatePatientMedicineLocal(patientMedicineId, expirationDate, quantity);
+            return;
+        }
+
         isLoading.postValue(true);
         networkModule.updateMedicine(patientMedicineId, expirationDate, quantity).enqueue(new Callback<PatientMedicineResponse>() {
             @Override
@@ -210,6 +301,21 @@ public class MedicineRepository {
                 isLoading.postValue(false);
                 error.postValue("Network error: " + t.getMessage());
             }
+        });
+    }
+
+    private void updatePatientMedicineLocal(long patientMedicineId, String expirationDate, String quantity) {
+        PillulkinDatabase.databaseWriteExecutor.execute(() -> {
+            List<CachedMedicine> existing = db.cachedMedicineDao().getMedicines(NetworkModule.LOCAL_PATIENT_ID);
+            for (CachedMedicine m : existing) {
+                if (m.getId() == patientMedicineId) {
+                    m.setExpirationDate(expirationDate);
+                    m.setQuantity(quantity);
+                }
+            }
+            db.cachedMedicineDao().deleteByPatientId(NetworkModule.LOCAL_PATIENT_ID);
+            db.cachedMedicineDao().insertAll(existing);
+            patientMedicinesData.postValue(toResponses(existing));
         });
     }
 

@@ -36,12 +36,8 @@ public class PatientProfileRepository {
     public LiveData<String> getError() { return error; }
 
     public void loadProfile() {
-        if (!networkModule.isPatientLoggedIn()) {
-            loadFromCache();
-            return;
-        }
-
         loadFromCache();
+        if (!networkModule.isGoogleLoggedIn()) return;
 
         isLoading.postValue(true);
         networkModule.getProfile().enqueue(new Callback<PatientProfileResponse>() {
@@ -67,8 +63,7 @@ public class PatientProfileRepository {
     }
 
     private void loadFromCache() {
-        long patientId = networkModule.getPatientId();
-        if (patientId <= 0) return;
+        long patientId = networkModule.getEffectivePatientId();
         PillulkinDatabase.databaseWriteExecutor.execute(() -> {
             CachedProfile cached = db.cachedProfileDao().getProfile(patientId);
             if (cached != null && profileData.getValue() == null) {
@@ -106,7 +101,7 @@ public class PatientProfileRepository {
         }
 
         PatientProfileResponse optimistic = new PatientProfileResponse();
-        optimistic.setPatientId(networkModule.getPatientId());
+        optimistic.setPatientId(networkModule.getEffectivePatientId());
         optimistic.setName(name);
         optimistic.setAge(age);
         optimistic.setAllergies(allergies);
@@ -114,6 +109,8 @@ public class PatientProfileRepository {
         optimistic.setNotes(notes);
         profileData.postValue(optimistic);
         saveToCache(optimistic);
+
+        if (networkModule.isLocalMode()) return;
 
         String payload = (name != null ? name : "") + "|" +
                 (age != null ? age : "") + "|" +

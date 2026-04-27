@@ -28,7 +28,7 @@ import java.util.concurrent.Executors;
                 PendingOperation.class,
                 Reminder.class
         },
-        version = 2,
+        version = 3,
         exportSchema = false
 )
 public abstract class PillulkinDatabase extends RoomDatabase {

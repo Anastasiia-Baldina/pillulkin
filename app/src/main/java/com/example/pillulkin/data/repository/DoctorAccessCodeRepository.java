@@ -123,4 +123,8 @@ public class DoctorAccessCodeRepository {
     public void logout() {
         networkModule.clearDoctorSession();
     }
+
+    public void notifyLoginSuccess() {
+        loginSuccess.postValue(true);
+    }
 }

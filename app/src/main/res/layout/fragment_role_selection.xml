@@ -9,18 +9,31 @@
     android:padding="24dp">
 
     <TextView
-        android:id="@+id/tvTitle"
+        android:id="@+id/tvAppName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/role_selection_title"
-        android:textSize="28sp"
+        android:text="Пилюлькин"
+        android:textSize="36sp"
         android:textStyle="bold"
         android:textColor="@color/primary_dark"
-        app:layout_constraintBottom_toTopOf="@id/tvSubtitle"
+        app:layout_constraintBottom_toTopOf="@id/tvTitle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/role_selection_title"
+        android:textSize="20sp"
+        android:textStyle="italic"
+        android:textColor="@color/primary"
+        app:layout_constraintBottom_toTopOf="@id/tvSubtitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvAppName" />
 
     <TextView
         android:id="@+id/tvSubtitle"

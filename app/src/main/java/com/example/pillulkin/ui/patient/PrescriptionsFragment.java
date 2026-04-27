@@ -14,6 +14,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.pillulkin.R;
+import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.data.remote.model.PrescriptionResponse;
 import com.example.pillulkin.databinding.FragmentPrescriptionsBinding;
 import com.example.pillulkin.ui.adapter.PrescriptionAdapter;
@@ -40,9 +41,17 @@ public class PrescriptionsFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(PrescriptionsViewModel.class);
 
         setupToolbar();
+
+        NetworkModule nm = NetworkModule.getInstance(requireContext());
+        if (nm.isLocalMode()) {
+            binding.rvPrescriptions.setVisibility(View.GONE);
+            binding.emptyState.setVisibility(View.VISIBLE);
+            binding.tvEmptyText.setText(R.string.prescriptions_auth_required);
+            return;
+        }
+
         setupRecyclerView();
         observeData();
-
         viewModel.loadPrescriptions();
     }
 
@@ -78,7 +87,8 @@ public class PrescriptionsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (viewModel != null) viewModel.loadPrescriptions();
+        NetworkModule nm = NetworkModule.getInstance(requireContext());
+        if (viewModel != null && !nm.isLocalMode()) viewModel.loadPrescriptions();
     }
 
     @Override

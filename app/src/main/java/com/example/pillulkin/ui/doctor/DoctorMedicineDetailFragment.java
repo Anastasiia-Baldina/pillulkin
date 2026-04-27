@@ -67,6 +67,11 @@ public class DoctorMedicineDetailFragment extends Fragment {
         setupMedicineInfo();
         setupSpinners();
         setupAddButton();
+
+        NetworkModule nm = NetworkModule.getInstance(requireContext().getApplicationContext());
+        if (nm.isLocalDoctorSession()) {
+            binding.btnAddPrescription.setVisibility(View.GONE);
+        }
     }
 
     private void setupToolbar() {
