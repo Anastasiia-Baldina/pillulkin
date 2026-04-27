@@ -43,6 +43,9 @@
         <action
             android:id="@+id/action_medicineList_to_generateCode"
             app:destination="@id/generateCodeFragment" />
+        <action
+            android:id="@+id/action_medicineList_to_notifications"
+            app:destination="@id/notificationsFragment" />
     </fragment>
 
     <fragment
@@ -89,4 +92,10 @@
         android:name="com.example.pillulkin.ui.patient.PrescriptionsFragment"
         android:label="Назначения"
         tools:layout="@layout/fragment_prescriptions" />
+
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.example.pillulkin.ui.patient.NotificationsFragment"
+        android:label="Настройка уведомлений"
+        tools:layout="@layout/fragment_notifications" />
 </navigation>

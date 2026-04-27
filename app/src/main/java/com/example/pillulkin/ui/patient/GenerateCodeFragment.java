@@ -16,7 +16,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.pillulkin.R;
+import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.databinding.FragmentGenerateCodeBinding;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class GenerateCodeFragment extends Fragment {
     private FragmentGenerateCodeBinding binding;
@@ -54,7 +56,7 @@ public class GenerateCodeFragment extends Fragment {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_profile);
                 return true;
             } else if (id == R.id.action_logout) {
-                Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                showLogoutDialog();
                 return true;
             }
             return false;
@@ -85,6 +87,22 @@ public class GenerateCodeFragment extends Fragment {
         viewModel.isCodeGenerated().observe(getViewLifecycleOwner(), isGenerated -> {
             binding.cardCode.setVisibility(isGenerated ? View.VISIBLE : View.GONE);
         });
+    }
+
+    private void showLogoutDialog() {
+        String[] options = {getString(R.string.logout_switch_profile), getString(R.string.logout_sign_out)};
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.logout_dialog_title)
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                    } else {
+                        NetworkModule.getInstance(requireContext().getApplicationContext()).clearPatientSession();
+                        Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     @Override

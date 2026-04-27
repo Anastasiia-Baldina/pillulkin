@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
 import com.example.pillulkin.R;
+import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 import com.example.pillulkin.databinding.FragmentAddMedicineBinding;
 import com.example.pillulkin.ui.adapter.ReferenceMedicineAdapter;
@@ -62,8 +63,11 @@ public class AddMedicineFragment extends Fragment {
             } else if (id == R.id.action_generate_code) {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
                 return true;
+            } else if (id == R.id.action_notifications) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_notifications);
+                return true;
             } else if (id == R.id.action_logout) {
-                Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                showLogoutDialog();
                 return true;
             }
             return false;
@@ -128,6 +132,22 @@ public class AddMedicineFragment extends Fragment {
                 searchAdapter.submitList(results);
             }
         });
+    }
+
+    private void showLogoutDialog() {
+        String[] options = {getString(R.string.logout_switch_profile), getString(R.string.logout_sign_out)};
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.logout_dialog_title)
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                    } else {
+                        NetworkModule.getInstance(requireContext().getApplicationContext()).clearPatientSession();
+                        Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     @Override

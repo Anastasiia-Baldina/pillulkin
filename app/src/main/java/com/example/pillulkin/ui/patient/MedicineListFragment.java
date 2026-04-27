@@ -14,9 +14,12 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.pillulkin.R;
+import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
 import com.example.pillulkin.databinding.FragmentMedicineListBinding;
 import com.example.pillulkin.ui.adapter.MedicineAdapter;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -78,8 +81,11 @@ public class MedicineListFragment extends Fragment {
             } else if (id == R.id.action_generate_code) {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
                 return true;
+            } else if (id == R.id.action_notifications) {
+                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_notifications);
+                return true;
             } else if (id == R.id.action_logout) {
-                Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                showLogoutDialog();
                 return true;
             }
             return false;
@@ -207,6 +213,22 @@ public class MedicineListFragment extends Fragment {
     private void updateEmptyState(boolean isEmpty) {
         binding.emptyState.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         binding.rvMedicines.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+    }
+
+    private void showLogoutDialog() {
+        String[] options = {getString(R.string.logout_switch_profile), getString(R.string.logout_sign_out)};
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.logout_dialog_title)
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                    } else {
+                        NetworkModule.getInstance(requireContext().getApplicationContext()).clearPatientSession();
+                        Navigation.findNavController(requireView()).popBackStack(R.id.nav_main, false);
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     @Override

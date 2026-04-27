@@ -149,4 +149,21 @@
     <string name="prescription_move_to_cabinet">Переместить в аптечку</string>
     <string name="prescription_moved">Перемещено в аптечку</string>
     <string name="prescription_date_label">Назначено:</string>
+    <string name="menu_notifications">Настройка уведомлений</string>
+    <string name="notifications_title">Настройка уведомлений</string>
+    <string name="notifications_empty">Нет напоминаний</string>
+    <string name="notifications_empty_description">Нажмите + чтобы добавить напоминание</string>
+    <string name="notification_add">Добавить напоминание</string>
+    <string name="notification_add_title">Новое напоминание</string>
+    <string name="notification_select_time">Выберите время</string>
+    <string name="notification_select_medicine">Препарат из аптечки</string>
+    <string name="notification_custom_text_hint">Свой текст (необязательно)</string>
+    <string name="notification_delete">Удалить</string>
+    <string name="notification_added">Напоминание добавлено</string>
+    <string name="notification_updated">Напоминание обновлено</string>
+    <string name="notification_edit_title">Редактирование напоминания</string>
+    <string name="notification_title">Напоминание</string>
+    <string name="logout_dialog_title">Выход</string>
+    <string name="logout_switch_profile">Сменить профиль</string>
+    <string name="logout_sign_out">Выйти из аккаунта</string>
 </resources>

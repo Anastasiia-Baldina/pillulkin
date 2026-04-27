@@ -18,7 +18,12 @@
         android:id="@+id/action_generate_code"
         android:title="@string/menu_generate_code"
         app:showAsAction="never" />
-    
+
+    <item
+        android:id="@+id/action_notifications"
+        android:title="@string/menu_notifications"
+        app:showAsAction="never" />
+
     <item
         android:id="@+id/action_logout"
         android:title="@string/menu_logout"
