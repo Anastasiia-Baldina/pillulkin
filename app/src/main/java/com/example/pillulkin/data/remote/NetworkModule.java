@@ -11,12 +11,10 @@ import com.example.pillulkin.data.remote.model.DoctorFullDataResponse;
 import com.example.pillulkin.data.remote.model.DoctorLoginRequest;
 import com.example.pillulkin.data.remote.model.GenerateCodeRequest;
 import com.example.pillulkin.data.remote.model.GoogleAuthRequest;
-import com.example.pillulkin.data.remote.model.PatientLoginRequest;
 import com.example.pillulkin.data.remote.model.PatientMedicineRequest;
 import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
 import com.example.pillulkin.data.remote.model.PatientProfileRequest;
 import com.example.pillulkin.data.remote.model.PatientProfileResponse;
-import com.example.pillulkin.data.remote.model.PatientRegisterRequest;
 import com.example.pillulkin.data.remote.model.PatientSymptomRequest;
 import com.example.pillulkin.data.remote.model.PatientSymptomResponse;
 import com.example.pillulkin.data.remote.model.PrescriptionRequest;
@@ -25,8 +23,6 @@ import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -49,8 +45,6 @@ public class NetworkModule {
     private static NetworkModule instance;
     private final PillulkinApi api;
     private final SharedPreferences prefs;
-    private final AtomicLong localIdCounter = new AtomicLong(-1);
-
     private NetworkModule(Context context) {
         prefs = context.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
@@ -281,10 +275,6 @@ public class NetworkModule {
 
     public Call<List<PrescriptionResponse>> getPrescriptions(long patientId) {
         return api.getPrescriptions(patientId, "active");
-    }
-
-    public Call<List<PrescriptionResponse>> getAllPrescriptions(long patientId) {
-        return api.getPrescriptions(patientId, null);
     }
 
     public Call<Void> moveToCabinet(long patientId, long prescriptionId) {

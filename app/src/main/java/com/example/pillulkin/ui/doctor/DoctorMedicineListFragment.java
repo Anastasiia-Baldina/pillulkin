@@ -18,8 +18,6 @@ import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
 import com.example.pillulkin.databinding.FragmentDoctorMedicineListBinding;
 import com.example.pillulkin.ui.adapter.MedicineAdapter;
 
-import java.util.ArrayList;
-
 public class DoctorMedicineListFragment extends Fragment {
     private FragmentDoctorMedicineListBinding binding;
     private DoctorCodeEntryViewModel viewModel;

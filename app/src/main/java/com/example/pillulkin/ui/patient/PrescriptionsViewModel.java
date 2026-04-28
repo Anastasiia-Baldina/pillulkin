@@ -1,8 +1,6 @@
 package com.example.pillulkin.ui.patient;
 
 import android.app.Application;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;

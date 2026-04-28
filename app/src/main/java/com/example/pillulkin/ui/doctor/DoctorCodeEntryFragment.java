@@ -30,8 +30,6 @@ public class DoctorCodeEntryFragment extends Fragment {
         return binding.getRoot();
     }
 
-    private boolean codeSubmitted = false;
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -58,7 +56,6 @@ public class DoctorCodeEntryFragment extends Fragment {
                 return;
             }
             binding.codeLayout.setError(null);
-            codeSubmitted = true;
             viewModel.loginWithCode(code);
         });
     }

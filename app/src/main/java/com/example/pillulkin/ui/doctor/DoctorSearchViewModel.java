@@ -10,7 +10,6 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 import com.example.pillulkin.data.repository.MedicineRepository;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class DoctorSearchViewModel extends AndroidViewModel {
@@ -42,12 +41,6 @@ public class DoctorSearchViewModel extends AndroidViewModel {
 
     public void searchBySymptoms(List<String> symptoms) {
         isSearching.setValue(true);
-        repository.getRecommendations(symptoms);
-    }
-
-    public void searchByDiagnosis(String diagnosis) {
-        isSearching.setValue(true);
-        List<String> symptoms = Arrays.asList(diagnosis.split("[,;]\\s*"));
         repository.getRecommendations(symptoms);
     }
 }

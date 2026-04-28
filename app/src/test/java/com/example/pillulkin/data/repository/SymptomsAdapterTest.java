@@ -1,6 +1,6 @@
 package com.example.pillulkin.data.repository;
 
-import com.example.pillulkin.data.remote.model.PatientSymptomResponse;
+import com.example.pillulkin.ui.adapter.SymptomsAdapter;
 
 import org.junit.Test;
 

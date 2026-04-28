@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    jacoco
 }
 
 android {
@@ -16,6 +17,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            enableUnitTestCoverage = true
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -32,6 +36,52 @@ android {
     
     buildFeatures {
         viewBinding = true
+    }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest")
+
+    reports {
+        xml.required = true
+        html.required = true
+    }
+
+    val fileFilter = listOf(
+        "**/R.class",
+        "**/R\$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "**/databinding/*",
+        "**/generated/*",
+        "**/BindingImpl*",
+        "**/BR.*"
+    )
+
+    val debugTree = fileTree("${project.buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes") {
+        exclude(fileFilter)
+    }
+
+    classDirectories.setFrom(debugTree)
+    sourceDirectories.setFrom(files("${project.projectDir}/src/main/java"))
+    executionData.setFrom(fileTree(project.buildDir) {
+        include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
+    })
+
+    onlyIf {
+        debugTree.files.isNotEmpty()
     }
 }
 

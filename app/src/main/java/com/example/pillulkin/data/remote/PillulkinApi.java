@@ -8,12 +8,10 @@ import com.example.pillulkin.data.remote.model.DoctorFullDataResponse;
 import com.example.pillulkin.data.remote.model.DoctorLoginRequest;
 import com.example.pillulkin.data.remote.model.GenerateCodeRequest;
 import com.example.pillulkin.data.remote.model.GoogleAuthRequest;
-import com.example.pillulkin.data.remote.model.PatientLoginRequest;
 import com.example.pillulkin.data.remote.model.PatientMedicineRequest;
 import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
 import com.example.pillulkin.data.remote.model.PatientProfileRequest;
 import com.example.pillulkin.data.remote.model.PatientProfileResponse;
-import com.example.pillulkin.data.remote.model.PatientRegisterRequest;
 import com.example.pillulkin.data.remote.model.PatientSymptomRequest;
 import com.example.pillulkin.data.remote.model.PatientSymptomResponse;
 import com.example.pillulkin.data.remote.model.PrescriptionRequest;
@@ -21,7 +19,6 @@ import com.example.pillulkin.data.remote.model.PrescriptionResponse;
 import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 
 import java.util.List;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -34,12 +31,6 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface PillulkinApi {
-
-    @POST("api/v1/auth/patient/register")
-    Call<AuthResponse> registerPatient(@Body PatientRegisterRequest request);
-
-    @POST("api/v1/auth/patient/login")
-    Call<AuthResponse> loginPatient(@Body PatientLoginRequest request);
 
     @POST("api/v1/auth/patient/google")
     Call<AuthResponse> loginWithGoogle(@Body GoogleAuthRequest request);
@@ -105,10 +96,6 @@ public interface PillulkinApi {
 
     @POST("api/v1/diagnose")
     Call<DiagnosisResponse> diagnose(@Body DiagnosisRequest request);
-
-    @GET("api/v1/doctor/validate")
-    Call<Map<String, Boolean>> validateDoctorToken(
-            @Header("X-Doctor-Token") String token);
 
     @GET("api/v1/doctor/patients/{patientId}/full-data")
     Call<DoctorFullDataResponse> getPatientFullData(

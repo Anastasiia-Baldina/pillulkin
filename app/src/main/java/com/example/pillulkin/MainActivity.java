@@ -5,9 +5,6 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
-
-import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {

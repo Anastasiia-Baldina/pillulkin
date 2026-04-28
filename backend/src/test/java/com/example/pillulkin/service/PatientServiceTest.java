@@ -192,7 +192,7 @@ class PatientServiceTest {
                 .addedAt(LocalDateTime.now())
                 .build();
 
-        when(patientMedicineRepository.findByPatientIdAndReferenceMedicineId(1L, 1L))
+        when(patientMedicineRepository.findById(1L))
                 .thenReturn(Optional.of(patientMedicine));
 
         patientService.removeMedicine(1L, 1L);

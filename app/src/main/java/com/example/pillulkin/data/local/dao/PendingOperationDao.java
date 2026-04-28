@@ -19,9 +19,6 @@ public interface PendingOperationDao {
     @Update
     void update(PendingOperation operation);
 
-    @Query("SELECT * FROM pending_operation WHERE status = :status ORDER BY created_at ASC")
-    List<PendingOperation> getByStatus(String status);
-
     @Query("SELECT * FROM pending_operation WHERE status != 'FAILED' ORDER BY created_at ASC")
     List<PendingOperation> getPending();
 

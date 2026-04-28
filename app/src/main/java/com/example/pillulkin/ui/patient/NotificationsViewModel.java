@@ -14,7 +14,6 @@ import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
 import com.example.pillulkin.notifications.ReminderScheduler;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;

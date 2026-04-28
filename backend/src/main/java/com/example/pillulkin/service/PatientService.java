@@ -119,9 +119,11 @@ public class PatientService {
 
     @Transactional
     public void removeMedicine(Long patientId, Long medicineId) {
-        PatientMedicine medicine = patientMedicineRepository
-                .findByPatientIdAndReferenceMedicineId(patientId, medicineId)
+        PatientMedicine medicine = patientMedicineRepository.findById(medicineId)
                 .orElseThrow(() -> new IllegalArgumentException("Medicine not found in kit"));
+        if (!medicine.getPatient().getId().equals(patientId)) {
+            throw new IllegalArgumentException("Medicine does not belong to patient");
+        }
         patientMedicineRepository.delete(medicine);
     }
 
