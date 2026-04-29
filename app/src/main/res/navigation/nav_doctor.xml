@@ -29,6 +29,9 @@
         <action
             android:id="@+id/action_doctorMedicineList_to_symptoms"
             app:destination="@id/doctorSymptomsFragment" />
+        <action
+            android:id="@+id/action_doctorMedicineList_to_prescriptions"
+            app:destination="@id/doctorPrescriptionsFragment" />
     </fragment>
 
     <fragment
@@ -58,6 +61,19 @@
         android:name="com.example.pillulkin.ui.doctor.DoctorSymptomsFragment"
         android:label="Симптомы пациента"
         tools:layout="@layout/fragment_doctor_symptoms">
+        <action
+            android:id="@+id/action_doctorSymptoms_to_prescriptions"
+            app:destination="@id/doctorPrescriptionsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/doctorPrescriptionsFragment"
+        android:name="com.example.pillulkin.ui.doctor.DoctorPrescriptionsFragment"
+        android:label="Назначения пациента"
+        tools:layout="@layout/fragment_doctor_prescriptions">
+        <action
+            android:id="@+id/action_doctorPrescriptions_to_symptoms"
+            app:destination="@id/doctorSymptomsFragment" />
     </fragment>
 
     <fragment

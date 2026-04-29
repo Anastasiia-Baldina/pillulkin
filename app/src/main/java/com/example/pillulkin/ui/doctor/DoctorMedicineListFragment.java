@@ -64,6 +64,16 @@ public class DoctorMedicineListFragment extends Fragment {
                     Navigation.findNavController(requireView()).navigate(R.id.action_doctorMedicineList_to_symptoms);
                 } catch (Exception ignored) {}
                 return true;
+            } else if (id == R.id.action_doctor_prescriptions) {
+                try {
+                    Navigation.findNavController(requireView()).navigate(R.id.action_doctorMedicineList_to_prescriptions);
+                } catch (Exception ignored) {}
+                return true;
+            } else if (id == R.id.action_doctor_logout) {
+                NetworkModule.getInstance(requireContext().getApplicationContext()).clearDoctorSession();
+                Navigation.findNavController(requireView())
+                        .popBackStack(R.id.roleSelectionFragment, false);
+                return true;
             }
             return false;
         });

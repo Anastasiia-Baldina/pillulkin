@@ -113,6 +113,10 @@
     <!-- Doctor menu -->
     <string name="doctor_menu_medicine">Аптечка</string>
     <string name="doctor_menu_symptoms">Симптомы</string>
+    <string name="doctor_menu_prescriptions">Назначения</string>
+    <string name="doctor_menu_logout">Выход</string>
+    <string name="doctor_prescriptions_title">Назначения пациента</string>
+    <string name="doctor_prescriptions_empty">Нет активных назначений</string>
     
     <!-- Menu -->
     <string name="menu_generate_code">Код для врача</string>
@@ -124,7 +128,8 @@
     <string name="error_delete_failed">Не удалось удалить</string>
     <string name="error_load_failed">Не удалось загрузить данные</string>
 
-    <string name="symptom_renew">Симптом актуален</string>
+    <string name="symptom_renew">Сделать актуальным</string>
+    <string name="symptom_renewed">Симптом обновлён</string>
     <string name="symptom_outdated_label">Неактуален</string>
     <string name="diagnose_button">Предположить диагноз</string>
     <string name="diagnose_error_no_symptoms">Для предположения диагноза необходимо ввести хотя бы 1 симптом</string>

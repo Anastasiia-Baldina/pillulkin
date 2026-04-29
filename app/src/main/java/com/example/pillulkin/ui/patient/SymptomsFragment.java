@@ -85,7 +85,7 @@ public class SymptomsFragment extends Fragment {
                 },
                 symptom -> {
                     viewModel.renewSymptom(symptom.getId());
-                    Toast.makeText(requireContext(), R.string.symptom_renew, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), R.string.symptom_renewed, Toast.LENGTH_SHORT).show();
                 }
         );
 

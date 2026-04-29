@@ -14,6 +14,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.pillulkin.R;
+import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.databinding.FragmentDoctorSymptomsBinding;
 import com.example.pillulkin.ui.adapter.SymptomsAdapter;
 
@@ -50,6 +51,17 @@ public class DoctorSymptomsFragment extends Fragment {
             int id = item.getItemId();
             if (id == R.id.action_doctor_medicine) {
                 Navigation.findNavController(requireView()).popBackStack();
+                return true;
+            } else if (id == R.id.action_doctor_prescriptions) {
+                try {
+                    Navigation.findNavController(requireView())
+                            .navigate(R.id.action_doctorSymptoms_to_prescriptions);
+                } catch (Exception ignored) {}
+                return true;
+            } else if (id == R.id.action_doctor_logout) {
+                NetworkModule.getInstance(requireContext().getApplicationContext()).clearDoctorSession();
+                Navigation.findNavController(requireView())
+                        .popBackStack(R.id.roleSelectionFragment, false);
                 return true;
             }
             return false;
