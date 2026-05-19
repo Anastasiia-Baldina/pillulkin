@@ -17,6 +17,7 @@ import retrofit2.Response;
 
 public class DoctorAccessCodeRepository {
     private final NetworkModule networkModule;
+    private final Application application;
     private final MutableLiveData<String> generatedCode = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> error = new MutableLiveData<>();
@@ -24,6 +25,7 @@ public class DoctorAccessCodeRepository {
     private final MutableLiveData<DoctorFullDataResponse> patientData = new MutableLiveData<>();
 
     public DoctorAccessCodeRepository(Application application) {
+        this.application = application;
         networkModule = NetworkModule.getInstance(application);
     }
 
@@ -82,7 +84,7 @@ public class DoctorAccessCodeRepository {
                     networkModule.saveDoctorExpires(System.currentTimeMillis() + 60 * 60 * 1000L);
                     loginSuccess.postValue(true);
                 } else {
-                    error.postValue("Invalid code");
+                    error.postValue(application.getString(com.example.pillulkin.R.string.error_invalid_code));
                 }
             }
 

@@ -4,23 +4,25 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.pillulkin.R;
 import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
 import com.example.pillulkin.data.remote.model.RecommendationItem;
 import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 import com.example.pillulkin.databinding.FragmentDoctorSearchBinding;
+import com.example.pillulkin.ui.CustomMedicineDialogHelper;
 import com.example.pillulkin.ui.adapter.RecommendationSectionAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +32,7 @@ public class DoctorSearchFragment extends Fragment {
     private DoctorSearchViewModel viewModel;
     private DoctorCodeEntryViewModel sharedViewModel;
     private RecommendationSectionAdapter adapter;
-    private boolean isSymptomMode = true;
+    private boolean isSymptomMode = false;
 
     @Nullable
     @Override
@@ -67,10 +69,12 @@ public class DoctorSearchFragment extends Fragment {
         binding.chipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (checkedIds.contains(R.id.chipDiagnosis)) {
                 isSymptomMode = true;
-                binding.etQuery.setHint(R.string.search_type_diagnosis);
+                binding.searchLayout.setHint(getString(R.string.search_type_diagnosis_hint));
+                if (adapter != null) adapter.setCustomButtonVisible(false);
             } else if (checkedIds.contains(R.id.chipMedicine)) {
                 isSymptomMode = false;
-                binding.etQuery.setHint(R.string.search_type_medicine);
+                binding.searchLayout.setHint(getString(R.string.search_type_medicine_hint));
+                if (adapter != null) adapter.setCustomButtonVisible(true);
             }
         });
     }
@@ -102,11 +106,23 @@ public class DoctorSearchFragment extends Fragment {
             args.putString("activeSubstance", medicine.getActiveSubstance() != null ? medicine.getActiveSubstance() : "");
             args.putLong("patientId", patientId);
             Navigation.findNavController(requireView()).navigate(R.id.action_search_to_medicineDetail, args);
-        });
+        }, () -> showCustomMedicineDialog());
+
         if (binding.rvResults != null) {
-            binding.rvResults.setLayoutManager(new LinearLayoutManager(requireContext()));
+            binding.rvResults.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(requireContext()));
             binding.rvResults.setAdapter(adapter);
         }
+        adapter.submitItems(new ArrayList<>());
+    }
+
+    private void showCustomMedicineDialog() {
+        CustomMedicineDialogHelper.show(requireContext(), (name, dosage, form, activeSubstance, expirationDate, quantity) -> {
+            viewModel.addCustomMedicine(name, dosage, form, activeSubstance, null, null, expirationDate, quantity);
+            Toast.makeText(requireContext(), R.string.success_saved, Toast.LENGTH_SHORT).show();
+            try {
+                Navigation.findNavController(requireView()).popBackStack();
+            } catch (Exception ignored) {}
+        });
     }
 
     private void observeData() {

@@ -100,15 +100,40 @@ public class PatientService {
 
     @Transactional
     public PatientMedicineResponse addMedicine(Long patientId, PatientMedicineRequest request) {
-        if (patientMedicineRepository.existsByPatientIdAndReferenceMedicineId(patientId, request.getMedicineId())) {
-            throw new IllegalArgumentException("Medicine already in kit");
-        }
         Patient patient = patientRepository.getReferenceById(patientId);
-        ReferenceMedicine medicine = referenceMedicineRepository.getReferenceById(request.getMedicineId());
+
+        if (request.getMedicineId() != null) {
+            if (patientMedicineRepository.existsByPatientIdAndReferenceMedicineId(patientId, request.getMedicineId())) {
+                throw new IllegalArgumentException("Medicine already in kit");
+            }
+        }
+
+        ReferenceMedicine referenceMedicine = request.getMedicineId() != null
+                ? referenceMedicineRepository.getReferenceById(request.getMedicineId())
+                : null;
 
         PatientMedicine patientMedicine = PatientMedicine.builder()
                 .patient(patient)
-                .referenceMedicine(medicine)
+                .referenceMedicine(referenceMedicine)
+                .addedAt(LocalDateTime.now())
+                .expirationDate(request.getExpirationDate())
+                .quantity(request.getQuantity())
+                .build();
+        patientMedicine = patientMedicineRepository.save(patientMedicine);
+        return mapToMedicineResponse(patientMedicine);
+    }
+
+    @Transactional
+    public PatientMedicineResponse addCustomMedicine(Long patientId, CustomMedicineRequest request) {
+        Patient patient = patientRepository.getReferenceById(patientId);
+
+        PatientMedicine patientMedicine = PatientMedicine.builder()
+                .patient(patient)
+                .referenceMedicine(null)
+                .medicineName(request.getName())
+                .medicineDosage(request.getDosage())
+                .medicineForm(request.getForm())
+                .medicineActiveSubstance(request.getActiveSubstance())
                 .addedAt(LocalDateTime.now())
                 .expirationDate(request.getExpirationDate())
                 .quantity(request.getQuantity())
@@ -166,13 +191,30 @@ public class PatientService {
     }
 
     private PatientMedicineResponse mapToMedicineResponse(PatientMedicine medicine) {
+        String medName = medicine.getReferenceMedicine() != null
+                ? medicine.getReferenceMedicine().getName()
+                : medicine.getMedicineName();
+        String medDosage = medicine.getReferenceMedicine() != null
+                ? medicine.getReferenceMedicine().getDosage()
+                : medicine.getMedicineDosage();
+        String medForm = medicine.getReferenceMedicine() != null
+                ? medicine.getReferenceMedicine().getForm()
+                : medicine.getMedicineForm();
+        String medActiveSubstance = medicine.getReferenceMedicine() != null
+                ? medicine.getReferenceMedicine().getActiveSubstance()
+                : medicine.getMedicineActiveSubstance();
+        Long medId = medicine.getReferenceMedicine() != null
+                ? medicine.getReferenceMedicine().getId()
+                : null;
+
         return PatientMedicineResponse.builder()
                 .id(medicine.getId())
                 .patientId(medicine.getPatient().getId())
-                .medicineId(medicine.getReferenceMedicine().getId())
-                .medicineName(medicine.getReferenceMedicine().getName())
-                .dosage(medicine.getReferenceMedicine().getDosage())
-                .form(medicine.getReferenceMedicine().getForm())
+                .medicineId(medId)
+                .medicineName(medName)
+                .dosage(medDosage)
+                .form(medForm)
+                .activeSubstance(medActiveSubstance)
                 .addedAt(medicine.getAddedAt())
                 .expirationDate(medicine.getExpirationDate())
                 .quantity(medicine.getQuantity())

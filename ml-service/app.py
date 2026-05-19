@@ -2,6 +2,8 @@ import joblib
 import numpy as np
 import pandas as pd
 
+from difflib import get_close_matches
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -37,6 +39,24 @@ def normalize_symptom(symptom: str) -> str:
     return symptom.strip().lower().replace(" ", "_")
 
 
+def fuzzy_match_symptom(symptom_norm: str) -> str | None:
+    if symptom_norm in symptom_cols:
+        return symptom_norm
+    matches = get_close_matches(symptom_norm, symptom_cols, n=1, cutoff=0.5)
+    if matches:
+        return matches[0]
+    stripped = symptom_norm.replace("_", "")
+    for col in symptom_cols:
+        if col.replace("_", "") == stripped:
+            return col
+    matches = get_close_matches(stripped, [c.replace("_", "") for c in symptom_cols], n=1, cutoff=0.5)
+    if matches:
+        for col in symptom_cols:
+            if col.replace("_", "") == matches[0]:
+                return col
+    return None
+
+
 def build_patient_vector(current_symptoms: list[str]):
     x = pd.Series(0, index=symptom_cols, dtype=int)
     unknown_symptoms = []
@@ -44,8 +64,9 @@ def build_patient_vector(current_symptoms: list[str]):
     for symptom in current_symptoms:
         symptom_norm = normalize_symptom(symptom)
 
-        if symptom_norm in x.index:
-            x[symptom_norm] = 1
+        matched = fuzzy_match_symptom(symptom_norm)
+        if matched:
+            x[matched] = 1
         else:
             unknown_symptoms.append(symptom)
 

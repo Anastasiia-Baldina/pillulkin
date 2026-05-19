@@ -1,6 +1,7 @@
 package com.example.pillulkin.data.remote;
 
 import com.example.pillulkin.data.remote.model.AuthResponse;
+import com.example.pillulkin.data.remote.model.CustomMedicineRequest;
 import com.example.pillulkin.data.remote.model.DiagnosisRequest;
 import com.example.pillulkin.data.remote.model.DiagnosisResponse;
 import com.example.pillulkin.data.remote.model.DoctorCodeResponse;
@@ -74,6 +75,11 @@ public interface PillulkinApi {
     Call<PatientMedicineResponse> addMedicine(
             @Path("patientId") long patientId,
             @Body PatientMedicineRequest request);
+
+    @POST("api/v1/patients/{patientId}/medicines/custom")
+    Call<PatientMedicineResponse> addCustomMedicine(
+            @Path("patientId") long patientId,
+            @Body CustomMedicineRequest request);
 
     @DELETE("api/v1/patients/{patientId}/medicines/{medicineId}")
     Call<Void> deleteMedicine(

@@ -3,6 +3,7 @@ package com.example.pillulkin.data.remote.model;
 public class RecommendationItem {
     public static final int TYPE_HEADER = 0;
     public static final int TYPE_MEDICINE = 1;
+    public static final int TYPE_ADD_CUSTOM = 2;
 
     private final int type;
     private String headerText;
@@ -24,6 +25,10 @@ public class RecommendationItem {
         item.medicine = med;
         item.fromCabinet = fromCabinet;
         return item;
+    }
+
+    public static RecommendationItem customButton() {
+        return new RecommendationItem(TYPE_ADD_CUSTOM);
     }
 
     public int getType() { return type; }

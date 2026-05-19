@@ -42,10 +42,7 @@ public class DoctorMedicineListFragment extends Fragment {
         setupSearchButton();
         observeData();
 
-        NetworkModule nm = NetworkModule.getInstance(requireContext().getApplicationContext());
-        if (!nm.isLocalDoctorSession()) {
-            viewModel.loadPatientData();
-        }
+        viewModel.loadPatientData();
     }
 
     private void setupToolbar() {

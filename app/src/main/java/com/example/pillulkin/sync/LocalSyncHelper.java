@@ -31,6 +31,14 @@ public class LocalSyncHelper {
                         try {
                             networkModule.getApi().addMedicine(realPatientId, request).execute();
                         } catch (Exception ignored) {}
+                    } else {
+                        try {
+                            networkModule.getApi().addCustomMedicine(realPatientId,
+                                    new com.example.pillulkin.data.remote.model.CustomMedicineRequest(
+                                            med.getMedicineName(), med.getDosage(), med.getForm(),
+                                            med.getActiveSubstance(), null, null,
+                                            med.getExpirationDate(), med.getQuantity())).execute();
+                        } catch (Exception ignored) {}
                     }
                 }
 

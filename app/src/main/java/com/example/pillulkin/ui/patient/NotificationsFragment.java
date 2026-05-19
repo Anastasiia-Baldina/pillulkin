@@ -129,7 +129,7 @@ public class NotificationsFragment extends Fragment {
                     viewModel.addReminder(hour, minute, medicineName, customText);
                     Toast.makeText(requireContext(), R.string.notification_added, Toast.LENGTH_SHORT).show();
                 })
-                .setNegativeButton(android.R.string.cancel, null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 
@@ -179,7 +179,7 @@ public class NotificationsFragment extends Fragment {
                     viewModel.updateReminder(reminder, hour, minute, medicineName, customText);
                     Toast.makeText(requireContext(), R.string.notification_updated, Toast.LENGTH_SHORT).show();
                 })
-                .setNegativeButton(android.R.string.cancel, null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 

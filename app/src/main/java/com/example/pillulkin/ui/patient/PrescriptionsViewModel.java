@@ -6,10 +6,10 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.pillulkin.data.repository.MedicineRepository;
 import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.data.remote.model.PrescriptionResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -22,10 +22,12 @@ public class PrescriptionsViewModel extends AndroidViewModel {
     private final MutableLiveData<List<PrescriptionResponse>> prescriptions = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
     private final MutableLiveData<String> error = new MutableLiveData<>();
+    private final MedicineRepository medicineRepository;
 
     public PrescriptionsViewModel(@NonNull Application application) {
         super(application);
         networkModule = NetworkModule.getInstance(application);
+        medicineRepository = new MedicineRepository(application);
     }
 
     public LiveData<List<PrescriptionResponse>> getPrescriptions() { return prescriptions; }
@@ -62,6 +64,7 @@ public class PrescriptionsViewModel extends AndroidViewModel {
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
                     loadPrescriptions();
+                    medicineRepository.loadPatientMedicines();
                 }
             }
 

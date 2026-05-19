@@ -35,6 +35,10 @@ public class MedicineListViewModel extends AndroidViewModel {
         repository.loadPatientMedicines();
     }
 
+    public void loadMedicinesFromCache() {
+        repository.loadMedicinesFromCache();
+    }
+
     public void deleteMedicine(long medicineId) {
         repository.deletePatientMedicine(medicineId);
     }

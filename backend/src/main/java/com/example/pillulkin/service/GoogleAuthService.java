@@ -7,12 +7,14 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GoogleAuthService {
@@ -42,7 +44,8 @@ public class GoogleAuthService {
 
             return new GoogleUserInfo(email, name);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Google token verification failed: " + e.getMessage());
+            log.error("Google token verification failed", e);
+            throw new IllegalArgumentException("Google token verification failed: " + (e.getMessage() != null ? e.getMessage() : "unknown error"));
         }
     }
 

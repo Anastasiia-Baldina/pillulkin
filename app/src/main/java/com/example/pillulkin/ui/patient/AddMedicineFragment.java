@@ -20,6 +20,7 @@ import com.example.pillulkin.data.remote.NetworkModule;
 import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 import com.example.pillulkin.databinding.FragmentAddMedicineBinding;
 import com.example.pillulkin.ui.adapter.ReferenceMedicineAdapter;
+import com.example.pillulkin.ui.CustomMedicineDialogHelper;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Calendar;
@@ -43,6 +44,7 @@ public class AddMedicineFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(AddEditMedicineViewModel.class);
 
         setupToolbar();
+        setupChips();
         setupSearch();
         observeData();
     }
@@ -61,7 +63,11 @@ public class AddMedicineFragment extends Fragment {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_profile);
                 return true;
             } else if (id == R.id.action_generate_code) {
-                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                if (NetworkModule.getInstance(requireContext().getApplicationContext()).isLocalMode()) {
+                    Toast.makeText(requireContext(), R.string.code_auth_required, Toast.LENGTH_SHORT).show();
+                } else {
+                    Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                }
                 return true;
             } else if (id == R.id.action_notifications) {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_notifications);
@@ -77,25 +83,41 @@ public class AddMedicineFragment extends Fragment {
         });
     }
 
+    private void setupChips() {
+        binding.chipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (checkedIds.contains(R.id.chipSymptoms)) {
+                viewModel.setSymptomMode(true);
+                binding.searchLayout.setHint(getString(R.string.search_type_diagnosis_hint));
+                searchAdapter.setCustomButtonVisible(false);
+            } else {
+                viewModel.setSymptomMode(false);
+                binding.searchLayout.setHint(getString(R.string.search_medicine_hint));
+                searchAdapter.setCustomButtonVisible(true);
+            }
+        });
+    }
+
     private void setupSearch() {
-        searchAdapter = new ReferenceMedicineAdapter(medicine -> showAddDialog(medicine));
+        searchAdapter = new ReferenceMedicineAdapter(
+                medicine -> showAddDialog(medicine),
+                () -> showCustomMedicineDialog()
+        );
         binding.rvSearchResults.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(requireContext()));
         binding.rvSearchResults.setAdapter(searchAdapter);
 
-        binding.btnSearch.setOnClickListener(v -> {
-            String query = binding.etSearch.getText().toString().trim();
-            if (!query.isEmpty()) {
-                viewModel.searchMedicines(query);
-            }
-        });
+        binding.btnSearch.setOnClickListener(v -> performSearch());
 
         binding.etSearch.setOnEditorActionListener((v, actionId, event) -> {
-            String query = binding.etSearch.getText().toString().trim();
-            if (!query.isEmpty()) {
-                viewModel.searchMedicines(query);
-            }
+            performSearch();
             return true;
         });
+    }
+
+    private void performSearch() {
+        String query = binding.etSearch.getText().toString().trim();
+        if (!query.isEmpty()) {
+            viewModel.searchMedicines(query);
+        }
     }
 
     private void showAddDialog(ReferenceMedicineResponse medicine) {
@@ -121,12 +143,25 @@ public class AddMedicineFragment extends Fragment {
                 .setPositiveButton(R.string.save, (dialog, which) -> {
                     String expDate = etExpiration.getText().toString().trim();
                     String quantity = etQuantity.getText().toString().trim();
-                    viewModel.addMedicine(medicine.getId(), expDate.isEmpty() ? null : expDate, quantity.isEmpty() ? null : quantity);
+                    String medName = medicine.getName() != null ? medicine.getName() : "";
+                    String medDosage = medicine.getDosage() != null ? medicine.getDosage() : "";
+                    String medForm = medicine.getForm() != null ? medicine.getForm() : "";
+                    String medActiveSubstance = medicine.getActiveSubstance() != null ? medicine.getActiveSubstance() : "";
+                    viewModel.addMedicine(medicine.getId(), expDate.isEmpty() ? null : expDate, quantity.isEmpty() ? null : quantity,
+                            medName, medDosage, medForm, medActiveSubstance);
                     Toast.makeText(requireContext(), R.string.success_saved, Toast.LENGTH_SHORT).show();
                     Navigation.findNavController(requireView()).popBackStack();
                 })
-                .setNegativeButton(android.R.string.cancel, null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
+    }
+
+    private void showCustomMedicineDialog() {
+        CustomMedicineDialogHelper.show(requireContext(), (name, dosage, form, activeSubstance, expirationDate, quantity) -> {
+            viewModel.addCustomMedicine(name, dosage, form, activeSubstance, null, null, expirationDate, quantity);
+            Toast.makeText(requireContext(), R.string.success_saved, Toast.LENGTH_SHORT).show();
+            Navigation.findNavController(requireView()).popBackStack();
+        });
     }
 
     private void observeData() {
@@ -149,7 +184,7 @@ public class AddMedicineFragment extends Fragment {
                         Navigation.findNavController(requireView()).popBackStack(R.id.roleSelectionFragment, false);
                     }
                 })
-                .setNegativeButton(android.R.string.cancel, null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 

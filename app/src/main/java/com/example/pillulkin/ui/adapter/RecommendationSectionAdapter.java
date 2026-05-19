@@ -16,32 +16,61 @@ import java.util.List;
 
 public class RecommendationSectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private final List<RecommendationItem> items = new ArrayList<>();
+    private List<RecommendationItem> sourceItems = new ArrayList<>();
+    private List<RecommendationItem> displayItems = new ArrayList<>();
     private final OnMedicineClickListener listener;
+    private OnCustomClickListener customListener;
+    private boolean customButtonVisible = true;
 
     public interface OnMedicineClickListener {
         void onMedicineClick(com.example.pillulkin.data.remote.model.ReferenceMedicineResponse medicine);
+    }
+
+    public interface OnCustomClickListener {
+        void onCustomClick();
     }
 
     public RecommendationSectionAdapter(OnMedicineClickListener listener) {
         this.listener = listener;
     }
 
+    public RecommendationSectionAdapter(OnMedicineClickListener listener, OnCustomClickListener customListener) {
+        this.listener = listener;
+        this.customListener = customListener;
+    }
+
+    public void setCustomButtonVisible(boolean visible) {
+        this.customButtonVisible = visible;
+        rebuildDisplayItems();
+    }
+
     public void submitItems(List<RecommendationItem> newItems) {
-        items.clear();
-        items.addAll(newItems);
+        sourceItems = new ArrayList<>(newItems);
+        rebuildDisplayItems();
+    }
+
+    private void rebuildDisplayItems() {
+        displayItems = new ArrayList<>();
+        if (customListener != null && customButtonVisible) {
+            displayItems.add(RecommendationItem.customButton());
+        }
+        displayItems.addAll(sourceItems);
         notifyDataSetChanged();
     }
 
     @Override
     public int getItemViewType(int position) {
-        return items.get(position).getType();
+        return displayItems.get(position).getType();
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        if (viewType == RecommendationItem.TYPE_ADD_CUSTOM) {
+            View view = inflater.inflate(R.layout.item_add_custom, parent, false);
+            return new AddCustomViewHolder(view);
+        }
         if (viewType == RecommendationItem.TYPE_HEADER) {
             View view = inflater.inflate(R.layout.item_recommendation_header, parent, false);
             return new HeaderViewHolder(view);
@@ -52,8 +81,14 @@ public class RecommendationSectionAdapter extends RecyclerView.Adapter<RecyclerV
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        RecommendationItem item = items.get(position);
-        if (item.getType() == RecommendationItem.TYPE_HEADER) {
+        RecommendationItem item = displayItems.get(position);
+        if (item.getType() == RecommendationItem.TYPE_ADD_CUSTOM) {
+            holder.itemView.setOnClickListener(v -> {
+                if (customListener != null) {
+                    customListener.onCustomClick();
+                }
+            });
+        } else if (item.getType() == RecommendationItem.TYPE_HEADER) {
             ((HeaderViewHolder) holder).bind(item.getHeaderText());
         } else {
             ((MedicineViewHolder) holder).bind(item.getMedicine(), item.isFromCabinet());
@@ -62,7 +97,13 @@ public class RecommendationSectionAdapter extends RecyclerView.Adapter<RecyclerV
 
     @Override
     public int getItemCount() {
-        return items.size();
+        return displayItems.size();
+    }
+
+    static class AddCustomViewHolder extends RecyclerView.ViewHolder {
+        AddCustomViewHolder(@NonNull View itemView) {
+            super(itemView);
+        }
     }
 
     static class HeaderViewHolder extends RecyclerView.ViewHolder {

@@ -11,7 +11,7 @@
     
     <!-- Medicine List -->
     <string name="medicine_list_title">Моя аптечка</string>
-    <string name="medicine_search_hint">Поиск лекарства...</string>
+    <string name="medicine_search_hint">Поиск лекарства по аптечке...</string>
     <string name="medicine_empty">Аптечка пуста</string>
     <string name="medicine_empty_description">Добавьте первое лекарство</string>
     <string name="add_medicine">Добавить</string>
@@ -24,6 +24,11 @@
     <string name="medicine_name">Название</string>
     <string name="medicine_name_hint">Введите название лекарства</string>
     <string name="search_medicine_hint">Поиск по справочнику лекарств...</string>
+    <string name="search_type_diagnosis_hint">Введите симптом или диагноз...</string>
+    <string name="search_type_medicine_hint">Поиск по справочнику лекарств...</string>
+    <string name="add_custom_medicine">Добавить свой препарат</string>
+    <string name="custom_medicine_name_required">Название обязательно</string>
+    <string name="custom_medicine_active_substance_hint">Действующее вещество (необязательно)</string>
     <string name="search">Найти</string>
     <string name="medicine_dosage">Дозировка</string>
     <string name="medicine_dosage_hint">Например: 500 мг</string>
@@ -79,8 +84,8 @@
     <string name="doctor_search_title">Подбор лекарств</string>
     <string name="doctor_search_description">Введите диагноз или название препарата</string>
     <string name="doctor_search_hint">Введите запрос...</string>
-    <string name="search_type_diagnosis">По диагнозу</string>
-    <string name="search_type_medicine">По названию препарата</string>
+    <string name="search_type_diagnosis">По симптомам/диагнозу</string>
+    <string name="search_type_medicine">По названию/действующему веществу</string>
     <string name="search_button">Найти</string>
     
     <!-- Recommendation Results -->
@@ -124,6 +129,7 @@
     
     <!-- Errors -->
     <string name="error_generic">Произошла ошибка</string>
+    <string name="error_invalid_code">Неверный или истёкший код</string>
     <string name="error_save_failed">Не удалось сохранить</string>
     <string name="error_delete_failed">Не удалось удалить</string>
     <string name="error_load_failed">Не удалось загрузить данные</string>
@@ -172,11 +178,10 @@
     <string name="logout_dialog_title">Выход</string>
     <string name="logout_switch_profile">Сменить профиль</string>
     <string name="logout_sign_out">Выйти из аккаунта</string>
-    <string name="local_code_description">Создайте код для предоставления врачу доступа к вашей аптечке на этом устройстве</string>
-    <string name="local_code_validity">Код действует только на этом устройстве</string>
     <string name="local_mode_label">Локальный режим</string>
     <string name="google_sign_in_prompt">Авторизуйтесь через Google для сохранения данных на сервере</string>
     <string name="prescriptions_auth_required">Назначения доступны после авторизации через Google</string>
+    <string name="code_auth_required">Генерация кода доступна после авторизации через Google</string>
     <string name="diagnose_title">Выберите симптомы</string>
     <string name="diagnose_questions_title">Уточните симптомы</string>
     <string name="diagnose_filter_actual">Только актуальные</string>

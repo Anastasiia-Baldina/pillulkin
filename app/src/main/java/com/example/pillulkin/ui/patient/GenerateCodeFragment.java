@@ -72,8 +72,7 @@ public class GenerateCodeFragment extends Fragment {
         });
 
         binding.btnCopy.setOnClickListener(v -> {
-            String code = viewModel.getLocalCode().getValue();
-            if (code == null) code = viewModel.getGeneratedCode().getValue();
+            String code = viewModel.getGeneratedCode().getValue();
             if (code != null) {
                 ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText("access_code", code);
@@ -88,21 +87,8 @@ public class GenerateCodeFragment extends Fragment {
             if (code != null) binding.tvCode.setText(code);
         });
 
-        viewModel.getLocalCode().observe(getViewLifecycleOwner(), code -> {
-            if (code != null) {
-                binding.tvCode.setText(code);
-                binding.tvValidity.setText(R.string.local_code_validity);
-            }
-        });
-
         viewModel.isCodeGenerated().observe(getViewLifecycleOwner(), isGenerated -> {
-            binding.cardCode.setVisibility(isGenerated ? View.VISIBLE : View.GONE);
-        });
-
-        viewModel.isLocalMode().observe(getViewLifecycleOwner(), isLocal -> {
-            if (isLocal != null && isLocal) {
-                binding.tvDescription.setText(R.string.local_code_description);
-            }
+            binding.cardCode.setVisibility(Boolean.TRUE.equals(isGenerated) ? View.VISIBLE : View.GONE);
         });
     }
 
@@ -118,7 +104,7 @@ public class GenerateCodeFragment extends Fragment {
                         Navigation.findNavController(requireView()).popBackStack(R.id.roleSelectionFragment, false);
                     }
                 })
-                .setNegativeButton(android.R.string.cancel, null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 

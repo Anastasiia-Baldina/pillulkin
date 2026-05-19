@@ -7,25 +7,29 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.pillulkin.data.local.PillulkinDatabase;
-import com.example.pillulkin.data.local.entity.CachedMedicine;
-import com.example.pillulkin.data.local.entity.CachedProfile;
-import com.example.pillulkin.data.local.entity.CachedSymptom;
 import com.example.pillulkin.data.remote.NetworkModule;
+import com.example.pillulkin.data.remote.model.DiagnosisRequest;
+import com.example.pillulkin.data.remote.model.DiagnosisResponse;
 import com.example.pillulkin.data.remote.model.DoctorFullDataResponse;
 import com.example.pillulkin.data.remote.model.PatientMedicineResponse;
-import com.example.pillulkin.data.remote.model.PatientProfileResponse;
 import com.example.pillulkin.data.remote.model.PatientSymptomResponse;
 import com.example.pillulkin.data.repository.DoctorAccessCodeRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class DoctorCodeEntryViewModel extends AndroidViewModel {
     private final DoctorAccessCodeRepository repository;
     private final MutableLiveData<List<PatientMedicineResponse>> medicinesData = new MutableLiveData<>();
     private final MutableLiveData<List<PatientSymptomResponse>> symptomsData = new MutableLiveData<>();
     private final MutableLiveData<DoctorFullDataResponse> patientFullData = new MutableLiveData<>();
+    private final MutableLiveData<String> diagnosisResult = new MutableLiveData<>();
+    private final MutableLiveData<List<String>> suggestedQuestions = new MutableLiveData<>();
+    private List<String> currentSymptoms = new ArrayList<>();
 
     public DoctorCodeEntryViewModel(@NonNull Application application) {
         super(application);
@@ -57,68 +61,7 @@ public class DoctorCodeEntryViewModel extends AndroidViewModel {
     }
 
     public void loginWithCode(String code) {
-        NetworkModule nm = NetworkModule.getInstance(getApplication());
-        if (nm.validateLocalDoctorCode(code)) {
-            loginAsLocalDoctor();
-            return;
-        }
         repository.loginAsDoctor(code);
-    }
-
-    private void loginAsLocalDoctor() {
-        PillulkinDatabase db = PillulkinDatabase.getDatabase(getApplication());
-        NetworkModule nm = NetworkModule.getInstance(getApplication());
-        nm.setLocalDoctorSession(true);
-        nm.saveDoctorExpires(System.currentTimeMillis() + 60 * 60 * 1000L);
-
-        PillulkinDatabase.databaseWriteExecutor.execute(() -> {
-            List<CachedMedicine> cachedMeds = db.cachedMedicineDao().getMedicines(NetworkModule.LOCAL_PATIENT_ID);
-            List<CachedSymptom> cachedSyms = db.cachedSymptomDao().getSymptoms(NetworkModule.LOCAL_PATIENT_ID);
-            CachedProfile cachedProfile = db.cachedProfileDao().getProfile(NetworkModule.LOCAL_PATIENT_ID);
-
-            List<PatientMedicineResponse> meds = new ArrayList<>();
-            for (CachedMedicine cm : cachedMeds) {
-                PatientMedicineResponse r = new PatientMedicineResponse();
-                r.setId(cm.getId());
-                r.setPatientId(cm.getPatientId());
-                r.setMedicineId(cm.getMedicineId());
-                r.setMedicineName(cm.getMedicineName());
-                r.setDosage(cm.getDosage());
-                r.setForm(cm.getForm());
-                r.setAddedAt(cm.getAddedAt());
-                r.setExpirationDate(cm.getExpirationDate());
-                r.setQuantity(cm.getQuantity());
-                meds.add(r);
-            }
-
-            List<PatientSymptomResponse> syms = new ArrayList<>();
-            for (CachedSymptom cs : cachedSyms) {
-                PatientSymptomResponse r = new PatientSymptomResponse();
-                r.setId(cs.getId());
-                r.setPatientId(cs.getPatientId());
-                r.setSymptom(cs.getSymptom());
-                r.setTimestamp(cs.getTimestamp());
-                syms.add(r);
-            }
-
-            DoctorFullDataResponse fullData = new DoctorFullDataResponse();
-            fullData.setPatientId(NetworkModule.LOCAL_PATIENT_ID);
-            if (cachedProfile != null) {
-                PatientProfileResponse profile = new PatientProfileResponse();
-                profile.setPatientId(NetworkModule.LOCAL_PATIENT_ID);
-                profile.setName(cachedProfile.getName());
-                profile.setAge(cachedProfile.getAge());
-                profile.setAllergies(cachedProfile.getAllergies());
-                profile.setContraindications(cachedProfile.getContraindications());
-                profile.setNotes(cachedProfile.getNotes());
-                fullData.setProfile(profile);
-            }
-            fullData.setMedicines(meds);
-            fullData.setSymptoms(syms);
-
-            extractDataFromResponse(fullData);
-            repository.notifyLoginSuccess();
-        });
     }
 
     public void loadPatientData() {
@@ -139,8 +82,63 @@ public class DoctorCodeEntryViewModel extends AndroidViewModel {
     }
 
     public void logout() {
-        NetworkModule nm = NetworkModule.getInstance(getApplication());
-        nm.setLocalDoctorSession(false);
         repository.logout();
+    }
+
+    public LiveData<String> getDiagnosisResult() {
+        return diagnosisResult;
+    }
+
+    public LiveData<List<String>> getSuggestedQuestions() {
+        return suggestedQuestions;
+    }
+
+    public void diagnoseInitial(List<String> symptoms) {
+        currentSymptoms = new ArrayList<>(symptoms);
+        DiagnosisRequest request = new DiagnosisRequest(symptoms, "initial", null);
+        NetworkModule.getInstance(getApplication()).diagnose(request).enqueue(new Callback<DiagnosisResponse>() {
+            @Override
+            public void onResponse(Call<DiagnosisResponse> call, Response<DiagnosisResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    DiagnosisResponse body = response.body();
+                    if (body.getSuggestedQuestions() != null && !body.getSuggestedQuestions().isEmpty()) {
+                        suggestedQuestions.postValue(body.getSuggestedQuestions());
+                    } else {
+                        requestFinalDiagnosis(new ArrayList<>());
+                    }
+                } else {
+                    diagnosisResult.postValue("Ошибка диагностики");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DiagnosisResponse> call, Throwable t) {
+                diagnosisResult.postValue("Ошибка сети: " + t.getMessage());
+            }
+        });
+    }
+
+    public void requestFinalDiagnosis(List<String> answers) {
+        DiagnosisRequest request = new DiagnosisRequest(currentSymptoms, "final", answers);
+        NetworkModule.getInstance(getApplication()).diagnose(request).enqueue(new Callback<DiagnosisResponse>() {
+            @Override
+            public void onResponse(Call<DiagnosisResponse> call, Response<DiagnosisResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    DiagnosisResponse body = response.body();
+                    String text = body.getDiagnosis();
+                    if (body.getConfidence() > 0) {
+                        text += " (" + Math.round(body.getConfidence() * 100) + "%)";
+                    }
+                    diagnosisResult.postValue(text);
+                } else {
+                    diagnosisResult.postValue("Ошибка диагностики");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DiagnosisResponse> call, Throwable t) {
+                diagnosisResult.postValue("Ошибка сети: " + t.getMessage());
+            }
+        });
     }
 }

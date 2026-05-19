@@ -73,6 +73,22 @@
         android:name="com.example.pillulkin.ui.patient.PatientProfileFragment"
         android:label="Профиль"
         tools:layout="@layout/fragment_patient_profile">
+
+        <action
+            android:id="@+id/action_profile_to_symptoms"
+            app:destination="@id/symptomsFragment" />
+
+        <action
+            android:id="@+id/action_profile_to_generateCode"
+            app:destination="@id/generateCodeFragment" />
+
+        <action
+            android:id="@+id/action_profile_to_notifications"
+            app:destination="@id/notificationsFragment" />
+
+        <action
+            android:id="@+id/action_profile_to_prescriptions"
+            app:destination="@id/prescriptionsFragment" />
     </fragment>
 
     <fragment

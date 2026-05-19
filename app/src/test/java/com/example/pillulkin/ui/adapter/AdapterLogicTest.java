@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -462,5 +463,132 @@ public class AdapterLogicTest {
         ReferenceMedicineResponse med = createReference(5L, "Ibuprofen", "400mg");
         RecommendationItem item = RecommendationItem.medicine(med, false);
         assertFalse(item.isFromCabinet());
+    }
+
+    @Test
+    public void isSymptomOutdated_exactlySevenDays_notOutdated() {
+        String sevenDaysAgo = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss",
+                java.util.Locale.getDefault())
+                .format(new java.util.Date(System.currentTimeMillis() - 7L * 24 * 60 * 60 * 1000));
+        assertFalse(SymptomsAdapter.isSymptomOutdated(sevenDaysAgo));
+    }
+
+    @Test
+    public void isSymptomOutdated_eightDays_outdated() {
+        String eightDaysAgo = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss",
+                java.util.Locale.getDefault())
+                .format(new java.util.Date(System.currentTimeMillis() - 8L * 24 * 60 * 60 * 1000));
+        assertTrue(SymptomsAdapter.isSymptomOutdated(eightDaysAgo));
+    }
+
+    @Test
+    public void isSymptomOutdated_sixDays_notOutdated() {
+        String sixDaysAgo = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss",
+                java.util.Locale.getDefault())
+                .format(new java.util.Date(System.currentTimeMillis() - 6L * 24 * 60 * 60 * 1000));
+        assertFalse(SymptomsAdapter.isSymptomOutdated(sixDaysAgo));
+    }
+
+    @Test
+    public void isSymptomOutdated_futureDate_notOutdated() {
+        String future = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss",
+                java.util.Locale.getDefault())
+                .format(new java.util.Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000));
+        assertFalse(SymptomsAdapter.isSymptomOutdated(future));
+    }
+
+    @Test
+    public void isSymptomOutdated_malformedDate_notOutdated() {
+        assertFalse(SymptomsAdapter.isSymptomOutdated("not-a-date"));
+    }
+
+    @Test
+    public void isSymptomOutdated_thirtyDays_outdated() {
+        String thirtyDaysAgo = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss",
+                java.util.Locale.getDefault())
+                .format(new java.util.Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000));
+        assertTrue(SymptomsAdapter.isSymptomOutdated(thirtyDaysAgo));
+    }
+
+    @Test
+    public void prescriptionAdapter_listenerNull_submitList() {
+        PrescriptionAdapter adapter = spy(new PrescriptionAdapter(null));
+        doNothing().when(adapter).notifyDataSetChanged();
+        PrescriptionResponse p = new PrescriptionResponse();
+        p.setId(1L);
+        adapter.submitList(Collections.singletonList(p));
+        assertEquals(1, adapter.getItemCount());
+    }
+
+    @Test
+    public void reminderAdapter_listenerNull_submitList() {
+        ReminderAdapter adapter = spy(new ReminderAdapter(null));
+        doNothing().when(adapter).notifyDataSetChanged();
+        Reminder r = new Reminder();
+        r.setId(1);
+        adapter.submitList(Collections.singletonList(r));
+        assertEquals(1, adapter.getItemCount());
+    }
+
+    @Test
+    public void recommendationAdapter_listenerNull_submitItems() {
+        RecommendationSectionAdapter adapter = spy(new RecommendationSectionAdapter(null));
+        doNothing().when(adapter).notifyDataSetChanged();
+        List<RecommendationItem> items = new ArrayList<>();
+        items.add(RecommendationItem.header("Test"));
+        adapter.submitItems(items);
+        assertEquals(1, adapter.getItemCount());
+    }
+
+    @Test
+    public void prescriptionAdapter_submitListReplacesAndShrinks() {
+        PrescriptionAdapter adapter = spy(new PrescriptionAdapter(p -> {}));
+        doNothing().when(adapter).notifyDataSetChanged();
+        PrescriptionResponse p1 = new PrescriptionResponse();
+        PrescriptionResponse p2 = new PrescriptionResponse();
+        PrescriptionResponse p3 = new PrescriptionResponse();
+        p1.setId(1L);
+        p2.setId(2L);
+        p3.setId(3L);
+        adapter.submitList(Arrays.asList(p1, p2, p3));
+        assertEquals(3, adapter.getItemCount());
+        adapter.submitList(Collections.singletonList(p1));
+        assertEquals(1, adapter.getItemCount());
+    }
+
+    @Test
+    public void reminderAdapter_submitListReplacesAndShrinks() {
+        ReminderAdapter adapter = spy(new ReminderAdapter(new ReminderAdapter.OnReminderActionListener() {
+            @Override public void onToggle(Reminder reminder) {}
+            @Override public void onDelete(Reminder reminder) {}
+            @Override public void onClick(Reminder reminder) {}
+        }));
+        doNothing().when(adapter).notifyDataSetChanged();
+        Reminder r1 = new Reminder(); r1.setId(1);
+        Reminder r2 = new Reminder(); r2.setId(2);
+        Reminder r3 = new Reminder(); r3.setId(3);
+        adapter.submitList(Arrays.asList(r1, r2, r3));
+        assertEquals(3, adapter.getItemCount());
+        adapter.submitList(Collections.singletonList(r1));
+        assertEquals(1, adapter.getItemCount());
+    }
+
+    @Test
+    public void recommendationAdapter_mixedItems_count() {
+        RecommendationSectionAdapter adapter = spy(new RecommendationSectionAdapter(m -> {}));
+        doNothing().when(adapter).notifyDataSetChanged();
+        List<RecommendationItem> items = new ArrayList<>();
+        items.add(RecommendationItem.header("Section 1"));
+        items.add(RecommendationItem.medicine(createReference(1L, "A", "10mg"), false));
+        items.add(RecommendationItem.medicine(createReference(2L, "B", "20mg"), true));
+        items.add(RecommendationItem.header("Section 2"));
+        items.add(RecommendationItem.medicine(createReference(3L, "C", "30mg"), false));
+        adapter.submitItems(items);
+        assertEquals(5, adapter.getItemCount());
+        assertEquals(RecommendationItem.TYPE_HEADER, adapter.getItemViewType(0));
+        assertEquals(RecommendationItem.TYPE_MEDICINE, adapter.getItemViewType(1));
+        assertEquals(RecommendationItem.TYPE_MEDICINE, adapter.getItemViewType(2));
+        assertEquals(RecommendationItem.TYPE_HEADER, adapter.getItemViewType(3));
+        assertEquals(RecommendationItem.TYPE_MEDICINE, adapter.getItemViewType(4));
     }
 }

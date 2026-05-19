@@ -13,13 +13,14 @@ public interface ReferenceMedicineRepository extends JpaRepository<ReferenceMedi
 
     List<ReferenceMedicine> findByCategory(String category);
 
-    @Query("SELECT m FROM ReferenceMedicine m WHERE LOWER(m.indications) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    @Query(value = "SELECT * FROM reference_medicine WHERE similarity(indications, :keyword) > 0.2 ORDER BY similarity(indications, :keyword) DESC", nativeQuery = true)
     List<ReferenceMedicine> findByIndicationsContaining(@Param("keyword") String keyword);
 
-    @Query("SELECT m FROM ReferenceMedicine m WHERE " +
-           "LOWER(m.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(m.activeSubstance) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(m.indications) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    @Query(value = "SELECT * FROM reference_medicine WHERE " +
+           "similarity(name, :keyword) > 0.2 OR " +
+           "similarity(active_substance, :keyword) > 0.2 OR " +
+           "similarity(indications, :keyword) > 0.2 " +
+           "ORDER BY GREATEST(similarity(name, :keyword), similarity(active_substance, :keyword), similarity(indications, :keyword)) DESC", nativeQuery = true)
     List<ReferenceMedicine> searchMedicines(@Param("keyword") String keyword);
 
     boolean existsByName(String name);

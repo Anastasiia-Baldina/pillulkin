@@ -18,6 +18,12 @@ public interface CachedMedicineDao {
     @Query("SELECT * FROM cached_medicine WHERE patient_id = :patientId")
     List<CachedMedicine> getMedicines(long patientId);
 
+    @Query("SELECT COUNT(*) FROM cached_medicine WHERE patient_id = :patientId")
+    int countByPatientId(long patientId);
+
     @Query("DELETE FROM cached_medicine WHERE patient_id = :patientId")
     void deleteByPatientId(long patientId);
+
+    @Query("DELETE FROM cached_medicine WHERE id = :id")
+    void deleteById(long id);
 }

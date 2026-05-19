@@ -88,6 +88,7 @@ public class DoctorPrescriptionsFragment extends Fragment {
             @Override
             public void onResponse(@NonNull Call<List<PrescriptionResponse>> call,
                                    @NonNull Response<List<PrescriptionResponse>> response) {
+                if (binding == null) return;
                 if (response.isSuccessful() && response.body() != null) {
                     List<PrescriptionResponse> list = response.body();
                     if (list.isEmpty()) {
@@ -107,6 +108,7 @@ public class DoctorPrescriptionsFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Call<List<PrescriptionResponse>> call,
                                   @NonNull Throwable t) {
+                if (binding == null) return;
                 binding.rvPrescriptions.setVisibility(View.GONE);
                 binding.emptyState.setVisibility(View.VISIBLE);
             }

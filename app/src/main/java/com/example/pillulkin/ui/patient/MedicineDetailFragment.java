@@ -58,7 +58,11 @@ public class MedicineDetailFragment extends Fragment {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_profile);
                 return true;
             } else if (id == R.id.action_generate_code) {
-                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                if (NetworkModule.getInstance(requireContext().getApplicationContext()).isLocalMode()) {
+                    Toast.makeText(requireContext(), R.string.code_auth_required, Toast.LENGTH_SHORT).show();
+                } else {
+                    Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                }
                 return true;
             } else if (id == R.id.action_notifications) {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_notifications);
@@ -177,7 +181,7 @@ public class MedicineDetailFragment extends Fragment {
                 .show();
     }
 
-    private void showLogoutDialog() {
+private void showLogoutDialog() {
         String[] options = {getString(R.string.logout_switch_profile), getString(R.string.logout_sign_out)};
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.logout_dialog_title)
@@ -189,7 +193,7 @@ public class MedicineDetailFragment extends Fragment {
                         Navigation.findNavController(requireView()).popBackStack(R.id.roleSelectionFragment, false);
                     }
                 })
-                .setNegativeButton(android.R.string.cancel, null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 

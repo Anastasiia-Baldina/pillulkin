@@ -121,8 +121,9 @@ public class PatientProfileFragment extends Fragment {
 
                     if (networkModule.isLocalMode()) {
                         networkModule.clearLocalMode();
-                        LocalSyncHelper.syncLocalToServer(requireContext().getApplicationContext(), auth.getPatientId());
                     }
+
+                    LocalSyncHelper.syncLocalToServer(requireContext().getApplicationContext(), auth.getPatientId());
 
                     binding.tvAuthStatus.setVisibility(View.GONE);
                     binding.btnGoogleSignIn.setVisibility(View.GONE);
@@ -148,16 +149,20 @@ public class PatientProfileFragment extends Fragment {
         binding.toolbar.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
             if (id == R.id.action_symptoms) {
-                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_symptoms);
+                Navigation.findNavController(requireView()).navigate(R.id.action_profile_to_symptoms);
                 return true;
             } else if (id == R.id.action_generate_code) {
-                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                if (NetworkModule.getInstance(requireContext().getApplicationContext()).isLocalMode()) {
+                    Toast.makeText(requireContext(), R.string.code_auth_required, Toast.LENGTH_SHORT).show();
+                } else {
+                    Navigation.findNavController(requireView()).navigate(R.id.action_profile_to_generateCode);
+                }
                 return true;
             } else if (id == R.id.action_notifications) {
-                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_notifications);
+                Navigation.findNavController(requireView()).navigate(R.id.action_profile_to_notifications);
                 return true;
             } else if (id == R.id.action_prescriptions) {
-                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_prescriptions);
+                Navigation.findNavController(requireView()).navigate(R.id.action_profile_to_prescriptions);
                 return true;
             } else if (id == R.id.action_logout) {
                 showLogoutDialog();
@@ -216,7 +221,7 @@ public class PatientProfileFragment extends Fragment {
                         Navigation.findNavController(requireView()).popBackStack(R.id.roleSelectionFragment, false);
                     }
                 })
-                .setNegativeButton(android.R.string.cancel, null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 

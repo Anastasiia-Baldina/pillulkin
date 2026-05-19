@@ -60,6 +60,10 @@ public class SymptomsViewModel extends AndroidViewModel {
         repository.loadSymptoms();
     }
 
+    public void refreshAfterAdd() {
+        repository.refreshAfterAdd();
+    }
+
     public void addSymptom(String symptom) {
         repository.addSymptom(symptom);
     }

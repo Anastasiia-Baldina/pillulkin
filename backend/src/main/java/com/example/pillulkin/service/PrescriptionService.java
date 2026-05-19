@@ -3,8 +3,10 @@ package com.example.pillulkin.service;
 import com.example.pillulkin.dto.PrescriptionRequest;
 import com.example.pillulkin.dto.PrescriptionResponse;
 import com.example.pillulkin.entity.Patient;
+import com.example.pillulkin.entity.PatientMedicine;
 import com.example.pillulkin.entity.Prescription;
 import com.example.pillulkin.entity.ReferenceMedicine;
+import com.example.pillulkin.repository.PatientMedicineRepository;
 import com.example.pillulkin.repository.PatientRepository;
 import com.example.pillulkin.repository.PrescriptionRepository;
 import com.example.pillulkin.repository.ReferenceMedicineRepository;
@@ -23,6 +25,7 @@ public class PrescriptionService {
     private final PrescriptionRepository prescriptionRepository;
     private final PatientRepository patientRepository;
     private final ReferenceMedicineRepository referenceMedicineRepository;
+    private final PatientMedicineRepository patientMedicineRepository;
 
     @Transactional
     public PrescriptionResponse createPrescription(Long patientId, PrescriptionRequest request) {
@@ -76,6 +79,16 @@ public class PrescriptionService {
 
         prescription.setStatus("MOVED");
         prescriptionRepository.save(prescription);
+
+        ReferenceMedicine medicine = prescription.getReferenceMedicine();
+        Patient patient = prescription.getPatient();
+
+        PatientMedicine patientMedicine = PatientMedicine.builder()
+                .patient(patient)
+                .referenceMedicine(medicine)
+                .addedAt(LocalDateTime.now())
+                .build();
+        patientMedicineRepository.save(patientMedicine);
     }
 
     private String buildDosageText(PrescriptionRequest request) {

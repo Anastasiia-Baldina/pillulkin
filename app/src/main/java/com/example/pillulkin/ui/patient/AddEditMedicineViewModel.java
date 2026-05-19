@@ -10,12 +10,14 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 import com.example.pillulkin.data.repository.MedicineRepository;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class AddEditMedicineViewModel extends AndroidViewModel {
     private final MedicineRepository repository;
     private final MutableLiveData<Boolean> saveSuccess = new MutableLiveData<>();
     private final MutableLiveData<String> error = new MutableLiveData<>();
+    private boolean isSymptomMode = false;
 
     public AddEditMedicineViewModel(@NonNull Application application) {
         super(application);
@@ -34,12 +36,34 @@ public class AddEditMedicineViewModel extends AndroidViewModel {
         return repository.getSearchResults();
     }
 
-    public void searchMedicines(String query) {
-        repository.searchMedicines(query);
+    public boolean isSymptomMode() {
+        return isSymptomMode;
     }
 
-    public void addMedicine(long medicineId, String expirationDate, String quantity) {
-        repository.addPatientMedicine(medicineId, expirationDate, quantity);
+    public void setSymptomMode(boolean symptomMode) {
+        isSymptomMode = symptomMode;
+    }
+
+    public void searchMedicines(String query) {
+        if (isSymptomMode) {
+            List<String> symptoms = Arrays.asList(query.split("[,;]\\s*"));
+            repository.getRecommendations(symptoms);
+        } else {
+            repository.searchMedicines(query);
+        }
+    }
+
+    public void addMedicine(long medicineId, String expirationDate, String quantity,
+                            String medicineName, String dosage, String form, String activeSubstance) {
+        repository.addPatientMedicine(medicineId, expirationDate, quantity, medicineName, dosage, form, activeSubstance);
+        saveSuccess.postValue(true);
+    }
+
+    public void addCustomMedicine(String name, String dosage, String form,
+                                  String activeSubstance, String indications,
+                                  String contraindications, String expirationDate,
+                                  String quantity) {
+        repository.addCustomMedicine(name, dosage, form, activeSubstance, indications, contraindications, expirationDate, quantity);
         saveSuccess.postValue(true);
     }
 

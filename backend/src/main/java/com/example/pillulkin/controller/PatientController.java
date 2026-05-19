@@ -63,8 +63,15 @@ public class PatientController {
     @PostMapping("/{patientId}/medicines")
     public ResponseEntity<PatientMedicineResponse> addMedicine(
             @PathVariable Long patientId,
-            @Valid @RequestBody PatientMedicineRequest request) {
+            @RequestBody PatientMedicineRequest request) {
         return ResponseEntity.ok(patientService.addMedicine(patientId, request));
+    }
+
+    @PostMapping("/{patientId}/medicines/custom")
+    public ResponseEntity<PatientMedicineResponse> addCustomMedicine(
+            @PathVariable Long patientId,
+            @Valid @RequestBody CustomMedicineRequest request) {
+        return ResponseEntity.ok(patientService.addCustomMedicine(patientId, request));
     }
 
     @DeleteMapping("/{patientId}/medicines/{medicineId}")

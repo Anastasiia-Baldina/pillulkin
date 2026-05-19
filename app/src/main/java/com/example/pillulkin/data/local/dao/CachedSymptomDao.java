@@ -18,6 +18,9 @@ public interface CachedSymptomDao {
     @Query("SELECT * FROM cached_symptom WHERE patient_id = :patientId ORDER BY timestamp DESC")
     List<CachedSymptom> getSymptoms(long patientId);
 
+    @Query("SELECT COUNT(*) FROM cached_symptom WHERE patient_id = :patientId")
+    int countByPatientId(long patientId);
+
     @Query("DELETE FROM cached_symptom WHERE patient_id = :patientId")
     void deleteByPatientId(long patientId);
 }

@@ -19,16 +19,20 @@ public class AuthController {
     private final GoogleAuthService googleAuthService;
 
     @PostMapping("/patient/google")
-    public ResponseEntity<AuthResponse> googleLogin(@Valid @RequestBody GoogleAuthRequest request) {
-        var userInfo = googleAuthService.verifyToken(request.getIdToken());
-        var patient = googleAuthService.findOrCreatePatient(userInfo.email(), userInfo.name());
-        String token = authService.generateToken(patient.getId());
-        var response = AuthResponse.builder()
-                .patientId(patient.getId())
-                .email(patient.getEmail())
-                .token(token)
-                .build();
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleAuthRequest request) {
+        try {
+            var userInfo = googleAuthService.verifyToken(request.getIdToken());
+            var patient = googleAuthService.findOrCreatePatient(userInfo.email(), userInfo.name());
+            String token = authService.generateToken(patient.getId());
+            var response = AuthResponse.builder()
+                    .patientId(patient.getId())
+                    .email(patient.getEmail())
+                    .token(token)
+                    .build();
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage() != null ? e.getMessage() : "Google authentication failed"));
+        }
     }
 
     @PostMapping("/doctor/generate-code")

@@ -29,6 +29,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneral(Exception e) {
         log.error("Unhandled exception", e);
-        return ResponseEntity.internalServerError().body(Map.of("error", "Internal server error"));
+        return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Internal server error"));
     }
 }

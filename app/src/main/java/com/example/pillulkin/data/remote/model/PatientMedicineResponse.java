@@ -7,6 +7,7 @@ public class PatientMedicineResponse {
     private String medicineName;
     private String dosage;
     private String form;
+    private String activeSubstance;
     private String addedAt;
     private String expirationDate;
     private String quantity;
@@ -28,6 +29,9 @@ public class PatientMedicineResponse {
 
     public String getForm() { return form; }
     public void setForm(String form) { this.form = form; }
+
+    public String getActiveSubstance() { return activeSubstance; }
+    public void setActiveSubstance(String activeSubstance) { this.activeSubstance = activeSubstance; }
 
     public String getAddedAt() { return addedAt; }
     public void setAddedAt(String addedAt) { this.addedAt = addedAt; }

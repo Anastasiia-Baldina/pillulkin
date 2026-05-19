@@ -27,6 +27,7 @@ public class SymptomsFragment extends Fragment {
     private FragmentSymptomsBinding binding;
     private SymptomsViewModel viewModel;
     private SymptomsAdapter adapter;
+    private boolean scrollToTopOnNextUpdate = false;
 
     @Nullable
     @Override
@@ -46,6 +47,8 @@ public class SymptomsFragment extends Fragment {
         setupAddButton();
         setupDiagnoseButton();
         observeData();
+
+        viewModel.loadSymptoms();
     }
 
     private void setupToolbar() {
@@ -61,7 +64,11 @@ public class SymptomsFragment extends Fragment {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_profile);
                 return true;
             } else if (id == R.id.action_generate_code) {
-                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                if (NetworkModule.getInstance(requireContext().getApplicationContext()).isLocalMode()) {
+                    Toast.makeText(requireContext(), R.string.code_auth_required, Toast.LENGTH_SHORT).show();
+                } else {
+                    Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                }
                 return true;
             } else if (id == R.id.action_notifications) {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_notifications);
@@ -104,6 +111,7 @@ public class SymptomsFragment extends Fragment {
             }
 
             viewModel.addSymptom(symptom);
+            scrollToTopOnNextUpdate = true;
             binding.etSymptom.setText("");
             binding.etSymptom.setError(null);
             Toast.makeText(requireContext(), R.string.symptom_added, Toast.LENGTH_SHORT).show();
@@ -138,7 +146,14 @@ public class SymptomsFragment extends Fragment {
 
     private void observeData() {
         viewModel.getSymptoms().observe(getViewLifecycleOwner(), symptoms -> {
-            adapter.submitList(symptoms);
+            if (scrollToTopOnNextUpdate && symptoms != null && !symptoms.isEmpty()) {
+                adapter.submitList(symptoms, () -> {
+                    binding.rvSymptoms.scrollToPosition(0);
+                    scrollToTopOnNextUpdate = false;
+                });
+            } else {
+                adapter.submitList(symptoms);
+            }
             updateEmptyState(symptoms == null || symptoms.isEmpty());
         });
 
@@ -179,14 +194,8 @@ public class SymptomsFragment extends Fragment {
                         Navigation.findNavController(requireView()).popBackStack(R.id.roleSelectionFragment, false);
                     }
                 })
-                .setNegativeButton(android.R.string.cancel, null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        viewModel.loadSymptoms();
     }
 
     @Override

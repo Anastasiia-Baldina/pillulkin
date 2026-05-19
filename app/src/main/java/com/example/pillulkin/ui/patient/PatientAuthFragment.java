@@ -116,10 +116,7 @@ public class PatientAuthFragment extends Fragment {
                         networkModule.savePatientId(auth.getPatientId());
                     }
 
-                    if (networkModule.isLocalMode()) {
-                        networkModule.clearLocalMode();
-                        LocalSyncHelper.syncLocalToServer(requireContext().getApplicationContext(), auth.getPatientId());
-                    }
+                    LocalSyncHelper.syncLocalToServer(requireContext().getApplicationContext(), auth.getPatientId());
 
                     navigateToPatient();
                 } else {

@@ -19,6 +19,7 @@ android {
     buildTypes {
         debug {
             enableUnitTestCoverage = true
+            enableAndroidTestCoverage = true
         }
         release {
             isMinifyEnabled = false
@@ -51,6 +52,44 @@ jacoco {
 }
 
 tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest", "connectedDebugAndroidTest")
+
+    reports {
+        xml.required = true
+        html.required = true
+    }
+
+    val fileFilter = listOf(
+        "**/R.class",
+        "**/R\$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "**/databinding/*",
+        "**/generated/*",
+        "**/BindingImpl*",
+        "**/BR.*"
+    )
+
+    val debugTree = fileTree("${project.buildDir}/intermediates/javac/debug/compileDebugJavaWithJavac/classes") {
+        exclude(fileFilter)
+    }
+
+    classDirectories.setFrom(debugTree)
+    sourceDirectories.setFrom(files("${project.projectDir}/src/main/java"))
+    executionData.setFrom(fileTree(project.buildDir) {
+        include(
+            "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
+            "outputs/code_coverage/debugAndroidTest/connected/**/*.ec"
+        )
+    })
+
+    onlyIf {
+        debugTree.files.isNotEmpty()
+    }
+}
+
+tasks.register<JacocoReport>("jacocoUnitTestReport") {
     dependsOn("testDebugUnitTest")
 
     reports {
@@ -135,6 +174,11 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.espresso.contrib)
     androidTestImplementation(libs.mockito.android)
-    androidTestImplementation(libs.fragment.testing)
+    debugImplementation(libs.fragment.testing) {
+        exclude(group = "androidx.test")
+        exclude(group = "androidx.test.ext")
+        exclude(group = "androidx.test.espresso")
+    }
     androidTestImplementation(libs.arch.core.testing)
+    androidTestImplementation(libs.room.testing)
 }

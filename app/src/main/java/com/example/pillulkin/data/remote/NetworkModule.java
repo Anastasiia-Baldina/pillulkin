@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.example.pillulkin.data.remote.model.AuthResponse;
+import com.example.pillulkin.data.remote.model.CustomMedicineRequest;
 import com.example.pillulkin.data.remote.model.DiagnosisRequest;
 import com.example.pillulkin.data.remote.model.DiagnosisResponse;
 import com.example.pillulkin.data.remote.model.DoctorCodeResponse;
@@ -39,7 +40,6 @@ public class NetworkModule {
     private static final String KEY_DOCTOR_EXPIRES = "doctor_expires";
     private static final String KEY_LOCAL_MODE = "local_mode";
     private static final String KEY_LOCAL_NEXT_ID = "local_next_id";
-    private static final String KEY_LOCAL_DOCTOR_CODE = "local_doctor_code";
     public static final long LOCAL_PATIENT_ID = -1L;
 
     private static NetworkModule instance;
@@ -136,7 +136,6 @@ public class NetworkModule {
                 .remove(KEY_PATIENT_ID)
                 .remove(KEY_PATIENT_TOKEN)
                 .remove(KEY_LOCAL_MODE)
-                .remove(KEY_LOCAL_DOCTOR_CODE)
                 .remove(KEY_LOCAL_NEXT_ID)
                 .apply();
     }
@@ -146,7 +145,6 @@ public class NetworkModule {
                 .remove(KEY_DOCTOR_TOKEN)
                 .remove(KEY_DOCTOR_PATIENT_ID)
                 .remove(KEY_DOCTOR_EXPIRES)
-                .remove(KEY_LOCAL_DOCTOR_CODE)
                 .apply();
     }
 
@@ -174,30 +172,6 @@ public class NetworkModule {
         long nextId = prefs.getLong(KEY_LOCAL_NEXT_ID, -1) - 1;
         prefs.edit().putLong(KEY_LOCAL_NEXT_ID, nextId).apply();
         return nextId;
-    }
-
-    public String generateLocalDoctorCode() {
-        int code = 100000 + (int) (Math.random() * 900000);
-        String codeStr = String.valueOf(code);
-        prefs.edit().putString(KEY_LOCAL_DOCTOR_CODE, codeStr).apply();
-        return codeStr;
-    }
-
-    public String getLocalDoctorCode() {
-        return prefs.getString(KEY_LOCAL_DOCTOR_CODE, null);
-    }
-
-    public boolean validateLocalDoctorCode(String code) {
-        String stored = getLocalDoctorCode();
-        return stored != null && stored.equals(code);
-    }
-
-    public boolean isLocalDoctorSession() {
-        return prefs.getBoolean("local_doctor_session", false);
-    }
-
-    public void setLocalDoctorSession(boolean local) {
-        prefs.edit().putBoolean("local_doctor_session", local).apply();
     }
 
     public Call<AuthResponse> doctorLogin(String code) {
@@ -242,6 +216,14 @@ public class NetworkModule {
 
     public Call<PatientMedicineResponse> addMedicine(long medicineId, String expirationDate, String quantity) {
         return api.addMedicine(getPatientId(), new PatientMedicineRequest(medicineId, expirationDate, quantity));
+    }
+
+    public Call<PatientMedicineResponse> addCustomMedicine(String name, String dosage, String form,
+                                                            String activeSubstance, String indications,
+                                                            String contraindications, String expirationDate,
+                                                            String quantity) {
+        return api.addCustomMedicine(getPatientId(), new CustomMedicineRequest(
+                name, dosage, form, activeSubstance, indications, contraindications, expirationDate, quantity));
     }
 
     public Call<Void> deleteMedicine(long medicineId) {

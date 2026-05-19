@@ -72,13 +72,33 @@ public class SymptomsRepository {
         });
     }
 
+    public void refreshAfterAdd() {
+        if (!networkModule.isPatientLoggedIn()) return;
+        if (networkModule.isLocalMode()) return;
+
+        isLoading.postValue(true);
+        networkModule.getSymptoms().enqueue(new Callback<List<PatientSymptomResponse>>() {
+            @Override
+            public void onResponse(Call<List<PatientSymptomResponse>> call, Response<List<PatientSymptomResponse>> response) {
+                isLoading.postValue(false);
+                if (response.isSuccessful() && response.body() != null) {
+                    symptomsData.postValue(response.body());
+                    saveToCache(response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<PatientSymptomResponse>> call, Throwable t) {
+                isLoading.postValue(false);
+            }
+        });
+    }
+
     private void loadFromCache() {
         long patientId = networkModule.getEffectivePatientId();
         PillulkinDatabase.databaseWriteExecutor.execute(() -> {
             List<CachedSymptom> cached = db.cachedSymptomDao().getSymptoms(patientId);
-            if (cached != null && !cached.isEmpty()) {
-                symptomsData.postValue(toResponses(cached));
-            }
+            symptomsData.postValue(toResponses(cached));
         });
     }
 
@@ -131,7 +151,7 @@ public class SymptomsRepository {
                 public void onResponse(Call<PatientSymptomResponse> call, Response<PatientSymptomResponse> response) {
                     isLoading.postValue(false);
                     if (response.isSuccessful()) {
-                        loadSymptoms();
+                        refreshAfterAdd();
                     } else {
                         queueOperation(PendingOperation.TYPE_SYMPTOM_ADD, symptom);
                     }
@@ -251,8 +271,8 @@ public class SymptomsRepository {
             @Override
             public void onResponse(Call<PatientSymptomResponse> call, Response<PatientSymptomResponse> response) {
                 isLoading.postValue(false);
-                if (response.isSuccessful()) {
-                    loadSymptoms();
+if (response.isSuccessful()) {
+                        refreshAfterAdd();
                 } else {
                     error.postValue("Failed to renew symptom: " + response.code());
                 }

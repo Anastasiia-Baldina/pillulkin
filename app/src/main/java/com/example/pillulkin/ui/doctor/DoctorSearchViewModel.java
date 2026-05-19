@@ -16,6 +16,7 @@ public class DoctorSearchViewModel extends AndroidViewModel {
     private final MedicineRepository repository;
     private final MutableLiveData<Boolean> isSearching = new MutableLiveData<>(false);
     private final MutableLiveData<String> error = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> saveSuccess = new MutableLiveData<>();
 
     public DoctorSearchViewModel(@NonNull Application application) {
         super(application);
@@ -34,6 +35,10 @@ public class DoctorSearchViewModel extends AndroidViewModel {
         return error;
     }
 
+    public LiveData<Boolean> getSaveSuccess() {
+        return saveSuccess;
+    }
+
     public void searchByMedicineName(String query) {
         isSearching.setValue(true);
         repository.searchMedicines(query);
@@ -42,5 +47,13 @@ public class DoctorSearchViewModel extends AndroidViewModel {
     public void searchBySymptoms(List<String> symptoms) {
         isSearching.setValue(true);
         repository.getRecommendations(symptoms);
+    }
+
+    public void addCustomMedicine(String name, String dosage, String form,
+                                   String activeSubstance, String indications,
+                                   String contraindications, String expirationDate,
+                                   String quantity) {
+        repository.addCustomMedicine(name, dosage, form, activeSubstance, indications, contraindications, expirationDate, quantity);
+        saveSuccess.postValue(true);
     }
 }

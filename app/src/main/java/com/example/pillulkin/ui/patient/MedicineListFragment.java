@@ -59,12 +59,6 @@ public class MedicineListFragment extends Fragment {
         viewModel.loadMedicines();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        viewModel.loadMedicines();
-    }
-
     private void setupToolbar() {
         binding.toolbar.setNavigationOnClickListener(v -> {
             Navigation.findNavController(v).popBackStack();
@@ -79,7 +73,11 @@ public class MedicineListFragment extends Fragment {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_profile);
                 return true;
             } else if (id == R.id.action_generate_code) {
-                Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                if (NetworkModule.getInstance(requireContext().getApplicationContext()).isLocalMode()) {
+                    Toast.makeText(requireContext(), R.string.code_auth_required, Toast.LENGTH_SHORT).show();
+                } else {
+                    Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_generateCode);
+                }
                 return true;
             } else if (id == R.id.action_notifications) {
                 Navigation.findNavController(requireView()).navigate(R.id.action_medicineList_to_notifications);
@@ -230,7 +228,7 @@ public class MedicineListFragment extends Fragment {
                         Navigation.findNavController(requireView()).popBackStack(R.id.roleSelectionFragment, false);
                     }
                 })
-                .setNegativeButton(android.R.string.cancel, null)
+                .setNegativeButton(R.string.cancel, null)
                 .show();
     }
 

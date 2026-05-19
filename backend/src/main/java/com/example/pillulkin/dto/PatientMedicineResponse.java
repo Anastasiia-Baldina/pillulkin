@@ -20,6 +20,7 @@ public class PatientMedicineResponse {
     private String medicineName;
     private String dosage;
     private String form;
+    private String activeSubstance;
     private LocalDateTime addedAt;
     private LocalDate expirationDate;
     private String quantity;

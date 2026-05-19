@@ -6,48 +6,103 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.pillulkin.R;
 import com.example.pillulkin.data.remote.model.ReferenceMedicineResponse;
 
-public class ReferenceMedicineAdapter extends ListAdapter<ReferenceMedicineResponse, ReferenceMedicineAdapter.ViewHolder> {
+import java.util.ArrayList;
+import java.util.List;
+
+public class ReferenceMedicineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    private static final int TYPE_ADD_CUSTOM = 0;
+    private static final int TYPE_MEDICINE = 1;
+
     private final OnMedicineClickListener listener;
+    private final OnCustomClickListener customListener;
+    private boolean customButtonVisible = true;
+    private List<ReferenceMedicineResponse> items = new ArrayList<>();
 
     public interface OnMedicineClickListener {
         void onMedicineClick(ReferenceMedicineResponse medicine);
     }
 
-    public ReferenceMedicineAdapter(OnMedicineClickListener listener) {
-        super(DIFF_CALLBACK);
-        this.listener = listener;
+    public interface OnCustomClickListener {
+        void onCustomClick();
     }
 
-    private static final DiffUtil.ItemCallback<ReferenceMedicineResponse> DIFF_CALLBACK = new DiffUtil.ItemCallback<ReferenceMedicineResponse>() {
-        @Override
-        public boolean areItemsTheSame(@NonNull ReferenceMedicineResponse oldItem, @NonNull ReferenceMedicineResponse newItem) {
-            return oldItem.getId().equals(newItem.getId());
-        }
+    public ReferenceMedicineAdapter(OnMedicineClickListener listener, OnCustomClickListener customListener) {
+        this.listener = listener;
+        this.customListener = customListener;
+    }
 
-        @Override
-        public boolean areContentsTheSame(@NonNull ReferenceMedicineResponse oldItem, @NonNull ReferenceMedicineResponse newItem) {
-            return oldItem.getName().equals(newItem.getName()) &&
-                   oldItem.getDosage().equals(newItem.getDosage());
+    public ReferenceMedicineAdapter(OnMedicineClickListener listener) {
+        this(listener, null);
+    }
+
+    public void submitList(List<ReferenceMedicineResponse> list) {
+        if (list == null) list = new ArrayList<>();
+        this.items = list;
+        notifyDataSetChanged();
+    }
+
+    public void setCustomButtonVisible(boolean visible) {
+        if (visible && customListener == null) return;
+        this.customButtonVisible = visible;
+        notifyDataSetChanged();
+    }
+
+    private boolean hasCustomButton() {
+        return customListener != null && customButtonVisible;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (hasCustomButton() && position == 0) {
+            return TYPE_ADD_CUSTOM;
         }
-    };
+        return TYPE_MEDICINE;
+    }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == TYPE_ADD_CUSTOM) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_add_custom, parent, false);
+            return new AddCustomViewHolder(view);
+        }
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recommendation, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(getItem(position));
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder instanceof AddCustomViewHolder) {
+            holder.itemView.setOnClickListener(v -> {
+                if (customListener != null) {
+                    customListener.onCustomClick();
+                }
+            });
+        } else {
+            int listPosition = hasCustomButton() ? position - 1 : position;
+            ((ViewHolder) holder).bind(items.get(listPosition));
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        int count = items.size();
+        if (hasCustomButton()) {
+            return count + 1;
+        }
+        return count;
+    }
+
+    static class AddCustomViewHolder extends RecyclerView.ViewHolder {
+        AddCustomViewHolder(@NonNull View itemView) {
+            super(itemView);
+        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -62,7 +117,7 @@ public class ReferenceMedicineAdapter extends ListAdapter<ReferenceMedicineRespo
 
         void bind(ReferenceMedicineResponse medicine) {
             tvMedicineName.setText(medicine.getName());
-            String dosageText = medicine.getDosage();
+            String dosageText = medicine.getDosage() != null ? medicine.getDosage() : "";
             if (medicine.getForm() != null && !medicine.getForm().isEmpty()) {
                 dosageText += " \u2022 " + medicine.getForm();
             }
